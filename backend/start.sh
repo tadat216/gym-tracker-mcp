@@ -38,14 +38,28 @@ ngrok config add-authtoken "$NGROK_AUTHTOKEN" --log=false 2>/dev/null || true
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MCP_HOST="${MCP_HOST:-127.0.0.1}"
 MCP_PORT="${MCP_PORT:-8000}"
+API_HOST="${API_HOST:-127.0.0.1}"
+API_PORT="${API_PORT:-8001}"
 
 echo "Starting MCP server on $MCP_HOST:$MCP_PORT ..."
 MCP_HOST="$MCP_HOST" MCP_PORT="$MCP_PORT" uv run --directory "$SCRIPT_DIR" main.py &
 MCP_PID=$!
 
-# Wait for the server to be ready
+# Wait for the MCP server to be ready
 for i in $(seq 1 20); do
   if curl -sf "http://$MCP_HOST:$MCP_PORT/mcp" -o /dev/null --max-time 1 2>/dev/null; then
+    break
+  fi
+  sleep 0.5
+done
+
+echo "Starting API server on $API_HOST:$API_PORT ..."
+API_HOST="$API_HOST" API_PORT="$API_PORT" uv run --directory "$SCRIPT_DIR" api.py &
+API_PID=$!
+
+# Wait for the API server to be ready
+for i in $(seq 1 20); do
+  if curl -sf "http://$API_HOST:$API_PORT/docs" -o /dev/null --max-time 1 2>/dev/null; then
     break
   fi
   sleep 0.5
@@ -88,6 +102,7 @@ cleanup() {
   echo ""
   echo "Shutting down..."
   kill "$NGROK_PID" 2>/dev/null || true
+  kill "$API_PID" 2>/dev/null || true
   kill "$MCP_PID" 2>/dev/null || true
 }
 trap cleanup EXIT INT TERM
@@ -104,7 +119,7 @@ if [ -z "$PUBLIC_URL" ]; then
 else
   echo ""
   echo "======================================================"
-  echo "  Gym Tracker MCP Server is running!"
+  echo "  Gym Tracker is running!"
   echo "======================================================"
   echo ""
   echo "  MCP endpoint:  $PUBLIC_URL/mcp"
@@ -114,10 +129,13 @@ else
   echo "    2. Add a new integration with URL:"
   echo "       $PUBLIC_URL/mcp"
   echo ""
+  echo "  REST API:      http://$API_HOST:$API_PORT"
+  echo "  Swagger docs:  http://$API_HOST:$API_PORT/docs"
+  echo ""
   echo "  ngrok inspector: http://127.0.0.1:4040"
   echo "======================================================"
 fi
 
 echo ""
 echo "Press Ctrl+C to stop."
-wait "$MCP_PID"
+wait "$MCP_PID" "$API_PID"
