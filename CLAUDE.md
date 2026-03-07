@@ -8,38 +8,53 @@ A Python MCP server for tracking gym workouts, built with FastMCP and SQLite. Th
 
 ## Commands
 
-This project uses `uv` for package management.
+All Python commands run from the `backend/` directory. This project uses `uv` for package management.
 
 ```bash
 # Install dependencies
-uv sync
+cd backend && uv sync
 
 # Run the MCP server (local only)
-uv run main.py
+cd backend && uv run main.py
 
 # Run with ngrok HTTPS tunnel (for claude.ai)
 export NGROK_AUTHTOKEN=<token>
-./start.sh
+./backend/start.sh
 
 # Seed the database with muscle groups and exercises
-uv run seed.py
+cd backend && uv run seed.py
 
 # Add a dependency
-uv add <package>
+cd backend && uv add <package>
 ```
 
-Python version: 3.12 (enforced via `.python-version`). No tests or linters are configured.
+Python version: 3.12 (enforced via `backend/.python-version`). No tests or linters are configured.
 
 Environment variables: `MCP_HOST` (default `127.0.0.1`), `MCP_PORT` (default `8000`), `NGROK_AUTHTOKEN` (required by `start.sh`).
 
 ## Architecture
 
+### Project Layout
+
+```
+gym-tracker-mcp/
+├── backend/          ← all Python source lives here
+│   ├── main.py
+│   ├── database.py
+│   ├── seed.py
+│   ├── utils.py
+│   ├── start.sh
+│   ├── pyproject.toml
+│   └── services/
+└── (frontend/ — React app, future)
+```
+
 ### Layers
 
 ```
-main.py  (FastMCP tool definitions, @mcp.tool decorators)
-    └── services/  (one service class per model, receives a Session)
-            └── database.py  (SQLModel models + SQLite engine + init_db)
+backend/main.py  (FastMCP tool definitions, @mcp.tool decorators)
+    └── backend/services/  (one service class per model, receives a Session)
+            └── backend/database.py  (SQLModel models + SQLite engine + init_db)
 ```
 
 `main.py` opens a short-lived `with Session(engine) as session:` block per tool call, instantiates the needed service(s), calls the method, then returns a plain `dict` or `list[dict]`. FastMCP handles serialisation and HTTP transport.

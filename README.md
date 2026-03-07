@@ -12,16 +12,16 @@ A Python MCP server for tracking gym workouts, built with FastMCP and SQLite. Ex
 
 ```bash
 # Install dependencies
-uv sync
+cd backend && uv sync
 
 # Seed the database with muscle groups and exercises
-uv run seed.py
+cd backend && uv run seed.py
 ```
 
 ## Running (local only)
 
 ```bash
-uv run main.py
+cd backend && uv run main.py
 # Server listens on http://127.0.0.1:8000
 # MCP endpoint: http://127.0.0.1:8000/mcp
 ```
@@ -39,7 +39,7 @@ ngrok provides an HTTPS tunnel so claude.ai can reach your local server.
 
 ```bash
 export NGROK_AUTHTOKEN=<your-token>
-./start.sh
+./backend/start.sh
 ```
 
 The script will print your public MCP endpoint, e.g.:
