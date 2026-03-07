@@ -26,10 +26,6 @@ cd backend && uv run python api.py
 # Run the MCP-only server (no REST API)
 cd backend && uv run main.py
 
-# Run with ngrok HTTPS tunnel (exposes /mcp for claude.ai)
-export NGROK_AUTHTOKEN=<token>
-./backend/start.sh
-
 # Seed the database with muscle groups and exercises
 cd backend && uv run seed.py
 
@@ -74,9 +70,8 @@ ngrok http 8000
 ```
 
 Environment variables:
-- `API_HOST` (default `127.0.0.1`), `API_PORT` (default `8000`) — used by `api.py` and `start.sh`
+- `API_HOST` (default `127.0.0.1`), `API_PORT` (default `8000`) — used by `api.py`
 - `MCP_HOST` (default `127.0.0.1`), `MCP_PORT` (default `8000`) — used by `main.py` only
-- `NGROK_AUTHTOKEN` — required by `start.sh`
 
 ## Architecture
 
@@ -92,7 +87,6 @@ gym-tracker-mcp/
 │   ├── database.py       ← SQLModel models, SQLite engine, init_db()
 │   ├── utils.py          ← Vietnam timezone (VN_TZ, today_vn())
 │   ├── seed.py           ← idempotent DB seeder (8 muscle groups, ~40 exercises)
-│   ├── start.sh          ← starts api.py + ngrok tunnel
 │   ├── routers/          ← FastAPI APIRouter per resource (REST layer)
 │   ├── tools/            ← FastMCP tool definitions per resource (MCP layer)
 │   └── services/         ← one service class per model (shared by both layers)
