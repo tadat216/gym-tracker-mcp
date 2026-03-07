@@ -32,32 +32,18 @@ fi
 ngrok config add-authtoken "$NGROK_AUTHTOKEN" --log=false 2>/dev/null || true
 
 # ---------------------------------------------------------------------------
-# Start MCP server
+# Start combined server (REST API + MCP)
 # ---------------------------------------------------------------------------
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-MCP_HOST="${MCP_HOST:-127.0.0.1}"
-MCP_PORT="${MCP_PORT:-8000}"
 API_HOST="${API_HOST:-127.0.0.1}"
-API_PORT="${API_PORT:-8001}"
+API_PORT="${API_PORT:-8000}"
 
-echo "Starting MCP server on $MCP_HOST:$MCP_PORT ..."
-MCP_HOST="$MCP_HOST" MCP_PORT="$MCP_PORT" uv run --directory "$SCRIPT_DIR" main.py &
-MCP_PID=$!
-
-# Wait for the MCP server to be ready
-for i in $(seq 1 20); do
-  if curl -sf "http://$MCP_HOST:$MCP_PORT/mcp" -o /dev/null --max-time 1 2>/dev/null; then
-    break
-  fi
-  sleep 0.5
-done
-
-echo "Starting API server on $API_HOST:$API_PORT ..."
+echo "Starting server on $API_HOST:$API_PORT ..."
 API_HOST="$API_HOST" API_PORT="$API_PORT" uv run --directory "$SCRIPT_DIR" api.py &
-API_PID=$!
+SERVER_PID=$!
 
-# Wait for the API server to be ready
+# Wait for the server to be ready
 for i in $(seq 1 20); do
   if curl -sf "http://$API_HOST:$API_PORT/docs" -o /dev/null --max-time 1 2>/dev/null; then
     break
@@ -69,8 +55,8 @@ done
 # Start ngrok tunnel
 # ---------------------------------------------------------------------------
 
-echo "Starting ngrok tunnel to port $MCP_PORT ..."
-ngrok http "$MCP_PORT" --log=stdout --log-format=json > /tmp/ngrok.log 2>&1 &
+echo "Starting ngrok tunnel to port $API_PORT ..."
+ngrok http "$API_PORT" --log=stdout --log-format=json > /tmp/ngrok.log 2>&1 &
 NGROK_PID=$!
 
 # Wait for ngrok to establish the tunnel and retrieve the public URL
@@ -102,8 +88,7 @@ cleanup() {
   echo ""
   echo "Shutting down..."
   kill "$NGROK_PID" 2>/dev/null || true
-  kill "$API_PID" 2>/dev/null || true
-  kill "$MCP_PID" 2>/dev/null || true
+  kill "$SERVER_PID" 2>/dev/null || true
 }
 trap cleanup EXIT INT TERM
 
@@ -138,4 +123,4 @@ fi
 
 echo ""
 echo "Press Ctrl+C to stop."
-wait "$MCP_PID" "$API_PID"
+wait "$SERVER_PID"
