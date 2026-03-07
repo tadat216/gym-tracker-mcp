@@ -1,0 +1,73 @@
+import { Plus, Check, X } from "lucide-react"
+import { Accordion } from "@/components/ui/accordion"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import type { ExerciseLibraryViewProps } from "../types"
+
+// MuscleGroupAccordion imported here — will be a placeholder until Task 5
+// Replace this import once Task 5 is complete:
+// import { MuscleGroupAccordion } from "../muscle-group-accordion"
+
+export function ExerciseLibraryView({
+  muscleGroups,
+  exercises,
+  isAdding,
+  isCreating,
+  newName,
+  newVnName,
+  onAdd,
+  onCancelAdd,
+  onCreate,
+  onDelete,
+  onNewNameChange,
+  onNewVnNameChange,
+}: ExerciseLibraryViewProps) {
+  const exercisesForGroup = (groupId: number) =>
+    exercises.filter((e) => e.muscle_group_id === groupId)
+
+  return (
+    <div className="space-y-3">
+      <Accordion type="multiple" className="w-full space-y-2">
+        {muscleGroups.map((group) => (
+          // Placeholder until MuscleGroupAccordion exists (Task 5)
+          <div key={group.id} className="border rounded-lg px-3 py-2 text-sm">
+            {group.name} · {group.vn_name} ({exercisesForGroup(group.id).length} exercises)
+          </div>
+        ))}
+      </Accordion>
+
+      {isAdding ? (
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 p-3 border rounded-lg">
+          <Input
+            placeholder="Muscle group name (English)"
+            className="flex-1 h-9"
+            value={newName}
+            onChange={(e) => onNewNameChange(e.target.value)}
+            disabled={isCreating}
+            autoFocus
+          />
+          <Input
+            placeholder="Tên nhóm cơ (tiếng Việt)"
+            className="flex-1 h-9"
+            value={newVnName}
+            onChange={(e) => onNewVnNameChange(e.target.value)}
+            disabled={isCreating}
+          />
+          <div className="flex gap-1">
+            <Button size="icon" variant="ghost" className="h-9 w-9" onClick={onCreate} disabled={isCreating}>
+              <Check className="h-4 w-4" />
+            </Button>
+            <Button size="icon" variant="ghost" className="h-9 w-9" onClick={onCancelAdd} disabled={isCreating}>
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <Button variant="outline" className="w-full sm:w-auto" onClick={onAdd}>
+          <Plus className="h-4 w-4 mr-2" />
+          Add Muscle Group
+        </Button>
+      )}
+    </div>
+  )
+}
