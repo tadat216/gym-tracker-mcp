@@ -8,22 +8,28 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import type { ExerciseRowDeleteDialogProps } from "../types"
 
-export function ExerciseRowDeleteDialog({
-  exerciseName,
+interface DeleteDialogProps {
+  title: string
+  description: string
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  onConfirm: () => void
+}
+
+export function DeleteDialog({
+  title,
+  description,
   open,
   onOpenChange,
   onConfirm,
-}: ExerciseRowDeleteDialogProps) {
+}: DeleteDialogProps) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete exercise?</AlertDialogTitle>
-          <AlertDialogDescription>
-            "{exerciseName}" will be permanently deleted.
-          </AlertDialogDescription>
+          <AlertDialogTitle>{title}</AlertDialogTitle>
+          <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>

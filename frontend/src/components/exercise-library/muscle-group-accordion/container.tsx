@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { useMuscleGroupAccordion } from "./hooks"
-import { MuscleGroupAccordionView, DeleteMuscleGroupDialog } from "./views"
+import { MuscleGroupAccordionView } from "./views"
+import { DeleteDialog } from "@/components/ui/custom/delete-dialog"
 import type { MuscleGroup, Exercise } from "../types"
 
 interface MuscleGroupAccordionProps {
@@ -42,8 +43,9 @@ export function MuscleGroupAccordion({
         onNewExerciseVnNameChange={hook.onNewExerciseVnNameChange}
         onCreateExercise={hook.handleCreateExercise}
       />
-      <DeleteMuscleGroupDialog
-        muscleGroupName={muscleGroup.name}
+      <DeleteDialog
+        title="Delete muscle group?"
+        description={`"${muscleGroup.name}" and all its exercises will be permanently deleted.`}
         open={showDeleteConfirm}
         onOpenChange={setShowDeleteConfirm}
         onConfirm={() => { onDelete(muscleGroup.id); setShowDeleteConfirm(false) }}

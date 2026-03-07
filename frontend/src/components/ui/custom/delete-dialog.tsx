@@ -8,22 +8,28 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import type { DeleteMuscleGroupDialogProps } from "../types"
 
-export function DeleteMuscleGroupDialog({
-  muscleGroupName,
+interface DeleteDialogProps {
+  title: string
+  description: string
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  onConfirm: () => void
+}
+
+export function DeleteDialog({
+  title,
+  description,
   open,
   onOpenChange,
   onConfirm,
-}: DeleteMuscleGroupDialogProps) {
+}: DeleteDialogProps) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete muscle group?</AlertDialogTitle>
-          <AlertDialogDescription>
-            "{muscleGroupName}" and all its exercises will be permanently deleted.
-          </AlertDialogDescription>
+          <AlertDialogTitle>{title}</AlertDialogTitle>
+          <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>

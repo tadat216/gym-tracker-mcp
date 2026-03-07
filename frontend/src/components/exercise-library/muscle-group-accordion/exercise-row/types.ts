@@ -17,10 +17,3 @@ export interface ExerciseRowEditViewProps {
   onSave: () => void
   onCancel: () => void
 }
-
-export interface ExerciseRowDeleteDialogProps {
-  exerciseName: string
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onConfirm: () => void
-}

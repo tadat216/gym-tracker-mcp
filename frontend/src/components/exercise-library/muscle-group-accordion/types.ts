@@ -28,10 +28,3 @@ export interface MuscleGroupAccordionViewProps {
   onNewExerciseVnNameChange: (v: string) => void
   onCreateExercise: () => void
 }
-
-export interface DeleteMuscleGroupDialogProps {
-  muscleGroupName: string
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onConfirm: () => void
-}

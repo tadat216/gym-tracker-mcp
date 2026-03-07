@@ -1,5 +1,6 @@
 import { useExerciseRow } from "./hooks"
-import { ExerciseRowReadView, ExerciseRowEditView, ExerciseRowDeleteDialog } from "./views"
+import { ExerciseRowReadView, ExerciseRowEditView } from "./views"
+import { DeleteDialog } from "@/components/ui/custom/delete-dialog"
 import type { Exercise } from "../../types"
 
 interface ExerciseRowProps {
@@ -41,8 +42,9 @@ export function ExerciseRow({ exercise }: ExerciseRowProps) {
           onDelete={() => setShowDeleteConfirm(true)}
         />
       )}
-      <ExerciseRowDeleteDialog
-        exerciseName={exercise.name}
+      <DeleteDialog
+        title="Delete exercise?"
+        description={`"${exercise.name}" will be permanently deleted.`}
         open={showDeleteConfirm}
         onOpenChange={setShowDeleteConfirm}
         onConfirm={handleDelete}
