@@ -26,4 +26,3 @@ dist-ssr
 # orval generated output — regenerate with: npm run generate
 src/api/*.ts
 src/api/model/
-!src/api/axios-instance.ts
