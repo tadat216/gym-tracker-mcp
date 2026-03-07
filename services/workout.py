@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from sqlmodel import Session, select
 
 from database import Workout
-from utils import VN_TZ, today_vn
+from utils import VN_TZ
 
 
 class WorkoutService:

@@ -1,4 +1,5 @@
 import calendar
+import os
 
 from fastmcp import FastMCP
 from sqlmodel import Session
@@ -214,4 +215,6 @@ def delete_set(set_id: int) -> dict:
 
 
 if __name__ == "__main__":
-    mcp.run()
+    host = os.getenv("MCP_HOST", "127.0.0.1")
+    port = int(os.getenv("MCP_PORT", "8000"))
+    mcp.run(transport="streamable-http", host=host, port=port)
