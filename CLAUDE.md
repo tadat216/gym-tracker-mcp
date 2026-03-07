@@ -14,39 +14,63 @@ This project uses `uv` for package management.
 # Install dependencies
 uv sync
 
-# Run the MCP server
+# Run the MCP server (local only)
 uv run main.py
+
+# Run with ngrok HTTPS tunnel (for claude.ai)
+export NGROK_AUTHTOKEN=<token>
+./start.sh
+
+# Seed the database with muscle groups and exercises
+uv run seed.py
 
 # Add a dependency
 uv add <package>
 ```
 
-Python version: 3.12 (enforced via `.python-version`).
+Python version: 3.12 (enforced via `.python-version`). No tests or linters are configured.
+
+Environment variables: `MCP_HOST` (default `127.0.0.1`), `MCP_PORT` (default `8000`), `NGROK_AUTHTOKEN` (required by `start.sh`).
 
 ## Architecture
 
-### MCP Server
+### Layers
 
-The entry point is `main.py`. All MCP tools are defined using FastMCP (`fastmcp>=3.1.0`). SQLite is used via the standard library (`sqlite3`) — no ORM.
+```
+main.py  (FastMCP tool definitions, @mcp.tool decorators)
+    └── services/  (one service class per model, receives a Session)
+            └── database.py  (SQLModel models + SQLite engine + init_db)
+```
+
+`main.py` opens a short-lived `with Session(engine) as session:` block per tool call, instantiates the needed service(s), calls the method, then returns a plain `dict` or `list[dict]`. FastMCP handles serialisation and HTTP transport.
+
+The server runs the `streamable-http` transport — the MCP endpoint is `/mcp` (e.g. `http://127.0.0.1:8000/mcp`).
 
 ### Database Schema
 
-Five tables with cascade deletes throughout the hierarchy:
+Five SQLModel tables with cascade deletes throughout the hierarchy:
 
 ```
 muscle_groups → exercises → workout_exercises → workout_exercises_details
-                                ↑
-                           workouts ──────────────┘
+                                  ↑
+                             workouts ──────────┘
 ```
 
-- `muscle_groups(id, name, color_hex)` — e.g. "Chest", "#FF0000"
-- `exercises(id, name, muscle_group_id)` — exercises belong to one muscle group
-- `workouts(id, date)` — a workout session on a given date
-- `workout_exercises(id, workout_id, exercise_id)` — which exercises were done in a workout
-- `workout_exercises_details(id, workout_exercise_id, rep_count, weight)` — individual sets (reps + weight) per exercise per workout
+- `muscle_groups(id, name, vn_name)`
+- `exercises(id, name, vn_name, muscle_group_id)`
+- `workouts(id, date)` — `date` is an ISO 8601 string; one workout per day enforced in `WorkoutService.get_or_create`
+- `workout_exercises(id, workout_id, exercise_id)` — join table; no update method
+- `workout_exercises_details(id, workout_exercise_id, rep_count, weight)` — one row per set; `weight` is in kg
+
+`init_db()` in `database.py` calls `SQLModel.metadata.create_all(engine)` and is called at module import time in `main.py`.
 
 ### Key Design Points
 
-- A workout contains multiple exercises; each exercise can have multiple sets (details).
-- `workout_exercises` is the join table between `workouts` and `exercises`; sets are recorded on `workout_exercises_details`, not directly on `workout_exercises`.
-- Deleting a `workout` cascades to its `workout_exercises` and their `workout_exercises_details`. Same cascade applies down from `muscle_groups` through `exercises`.
+- Sets (reps + weight) are stored on `workout_exercises_details`, not on `workout_exercises`.
+- `get_workout_detail` is the most complex tool — it chains four services in one session to build a nested response.
+- All date operations use Vietnam timezone (UTC+7) via `VN_TZ` and `today_vn()` from `utils.py`. `WorkoutService.list_last_n_days` imports `VN_TZ` directly for date arithmetic.
+- `vn_name` is a Vietnamese translation field present on both `MuscleGroup` and `Exercise`.
+
+### services/ Pattern
+
+Every service class accepts a `sqlmodel.Session` in `__init__` and uses `self.session` in all methods. `services/__init__.py` re-exports all five for a single import in `main.py`. `WorkoutService` has the most query methods: `get_or_create`, `list_last_n_days`, `list_in_date_range`, `list_in_month`.
