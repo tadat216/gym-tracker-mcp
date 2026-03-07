@@ -2,11 +2,8 @@ import { Plus, Check, X } from "lucide-react"
 import { Accordion } from "@/components/ui/accordion"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { MuscleGroupAccordion } from "../muscle-group-accordion"
 import type { ExerciseLibraryViewProps } from "../types"
-
-// MuscleGroupAccordion imported here — will be a placeholder until Task 5
-// Replace this import once Task 5 is complete:
-// import { MuscleGroupAccordion } from "../muscle-group-accordion"
 
 export function ExerciseLibraryView({
   muscleGroups,
@@ -29,10 +26,12 @@ export function ExerciseLibraryView({
     <div className="space-y-3">
       <Accordion type="multiple" className="w-full space-y-2">
         {muscleGroups.map((group) => (
-          // Placeholder until MuscleGroupAccordion exists (Task 5)
-          <div key={group.id} className="border rounded-lg px-3 py-2 text-sm">
-            {group.name} · {group.vn_name} ({exercisesForGroup(group.id).length} exercises)
-          </div>
+          <MuscleGroupAccordion
+            key={group.id}
+            muscleGroup={group}
+            exercises={exercisesForGroup(group.id)}
+            onDelete={onDelete}
+          />
         ))}
       </Accordion>
 
