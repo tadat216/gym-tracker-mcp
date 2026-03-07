@@ -1,1 +1,2 @@
-export { MuscleGroupAccordionView, DeleteMuscleGroupDialog } from "./main"
+export { MuscleGroupAccordionView } from "./main"
+export { DeleteMuscleGroupDialog } from "./delete-dialog"

@@ -45,7 +45,8 @@ frontend/src/
           useMuscleGroupAccordion.tsx
           index.ts
         views/
-          main.tsx
+          main.tsx                          ← MuscleGroupAccordionView only
+          delete-dialog.tsx                 ← DeleteMuscleGroupDialog only
           index.ts
         types.ts
         container.tsx
@@ -55,7 +56,9 @@ frontend/src/
             useExerciseRow.tsx
             index.ts
           views/
-            main.tsx
+            read.tsx                        ← ExerciseRowReadView only
+            edit.tsx                        ← ExerciseRowEditView only
+            delete-dialog.tsx               ← ExerciseRowDeleteDialog only
             index.ts
           types.ts
           container.tsx

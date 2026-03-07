@@ -4,49 +4,10 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ExerciseRow } from "../exercise-row"
-import type { MuscleGroupAccordionViewProps, DeleteMuscleGroupDialogProps } from "../types"
-
-export function DeleteMuscleGroupDialog({
-  muscleGroupName,
-  open,
-  onOpenChange,
-  onConfirm,
-}: DeleteMuscleGroupDialogProps) {
-  return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Delete muscle group?</AlertDialogTitle>
-          <AlertDialogDescription>
-            "{muscleGroupName}" and all its exercises will be permanently deleted.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction
-            onClick={onConfirm}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-          >
-            Delete
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
-  )
-}
+import type { MuscleGroupAccordionViewProps } from "../types"
 
 export function MuscleGroupAccordionView({
   muscleGroup,
