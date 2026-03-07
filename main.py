@@ -1,5 +1,4 @@
 import calendar
-from datetime import date
 
 from fastmcp import FastMCP
 from sqlmodel import Session
@@ -12,6 +11,7 @@ from services import (
     WorkoutExerciseService,
     WorkoutService,
 )
+from utils import today_vn
 
 mcp = FastMCP("Gym Tracker")
 
@@ -26,7 +26,7 @@ init_db()
 @mcp.tool()
 def get_current_date() -> str:
     """Returns today's date in ISO 8601 format (YYYY-MM-DD)."""
-    return date.today().isoformat()
+    return today_vn()
 
 
 @mcp.tool()
@@ -34,7 +34,7 @@ def get_calendar(month: int, year: int | None = None) -> dict:
     """Returns a calendar for the given month (1-12) and optional year (defaults to
     current year). Each week is a list of day numbers (0 = no day for that slot).
     Also returns which dates in that month have workouts logged."""
-    cal_year = year or date.today().year
+    cal_year = year or int(today_vn()[:4])
     weeks = calendar.monthcalendar(cal_year, month)
 
     with Session(engine) as session:
@@ -161,7 +161,7 @@ def get_workout_detail(workout_id: int) -> dict:
 def create_workout(workout_date: str | None = None) -> dict:
     """Create a workout for a given date (ISO 8601, defaults to today).
     Returns existing workout if one already exists for that date (one per day)."""
-    target_date = workout_date or date.today().isoformat()
+    target_date = workout_date or today_vn()
     with Session(engine) as session:
         workout = WorkoutService(session).get_or_create(target_date)
     return {"id": workout.id, "date": workout.date}

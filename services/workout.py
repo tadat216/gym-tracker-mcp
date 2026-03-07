@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-from datetime import date, timedelta
+from datetime import datetime, timedelta
 
 from sqlmodel import Session, select
 
 from database import Workout
+from utils import VN_TZ, today_vn
 
 
 class WorkoutService:
@@ -31,7 +32,7 @@ class WorkoutService:
         return list(self.session.exec(select(Workout).order_by(Workout.date.desc())).all())  # type: ignore[arg-type]
 
     def list_last_n_days(self, n: int) -> list[Workout]:
-        since = (date.today() - timedelta(days=n)).isoformat()
+        since = (datetime.now(VN_TZ).date() - timedelta(days=n)).isoformat()
         return list(
             self.session.exec(
                 select(Workout).where(Workout.date >= since).order_by(Workout.date.desc())  # type: ignore[arg-type]
