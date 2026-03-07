@@ -13,7 +13,14 @@ init_db()
 # Build the MCP ASGI app first so we can pass its lifespan to FastAPI
 mcp_asgi = mcp.http_app(path="/", transport="streamable-http")
 
-app = FastAPI(title="Gym Tracker API", version="1.0.0", lifespan=mcp_asgi.lifespan)
+app = FastAPI(
+    title="Gym Tracker API",
+    version="1.0.0",
+    lifespan=mcp_asgi.lifespan,
+    docs_url="/api/docs",
+    redoc_url="/api/redoc",
+    openapi_url="/api/openapi.json"
+)
 
 app.add_middleware(
     CORSMiddleware,
