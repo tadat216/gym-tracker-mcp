@@ -12,6 +12,11 @@ export default defineConfig({
       '/mcp': {
         target: 'http://127.0.0.1:8000',
         changeOrigin: true,
+        configure: (proxy) => {
+          proxy.on('proxyRes', (proxyRes) => {
+            proxyRes.headers['x-accel-buffering'] = 'no'
+          })
+        },
       },
     },
   },
