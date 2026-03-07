@@ -54,8 +54,23 @@ cd frontend && npm run dev
 cd frontend && npm run build
 
 # Regenerate API hooks from OpenAPI spec (backend must be running on 8000)
-curl http://localhost:8000/openapi.json > frontend/openapi.json
+curl http://localhost:8000/api/openapi.json > frontend/openapi.json
 cd frontend && npm run generate
+```
+
+**Production deployment:**
+```bash
+# Build frontend
+cd frontend && npm run build
+
+# Start backend on port 8001
+cd backend && API_PORT=8001 uv run python api.py
+
+# Start nginx on port 8000 (in another terminal)
+nginx -c /home/dev/gym-tracker-mcp/nginx.conf -g 'daemon off;'
+
+# Expose via ngrok (in another terminal)
+ngrok http 8000
 ```
 
 Environment variables:
@@ -105,19 +120,43 @@ api.py  (FastAPI app + FastMCP mounted at /mcp)
 
 `main.py` bypasses the REST layer entirely — it imports `mcp` from `mcp_instance.py` and runs it standalone.
 
-### Single-Port Design
+### Single-Port Design (Development)
 
-`api.py` wires MCP into FastAPI by mounting the FastMCP ASGI app at `/mcp`:
+In development mode, `api.py` serves everything on port 8000:
 
 ```python
 mcp_asgi = mcp.http_app(path="/", transport="streamable-http")
-app = FastAPI(lifespan=mcp_asgi.lifespan)   # MCP lifespan forwarded to FastAPI
-app.mount("/mcp", mcp_asgi)                  # path="/" means the sub-app's route is /
+app = FastAPI(
+    lifespan=mcp_asgi.lifespan,
+    docs_url="/api/docs",          # Swagger UI at /api/docs
+    redoc_url="/api/redoc",         # ReDoc at /api/redoc
+    openapi_url="/api/openapi.json" # OpenAPI spec at /api/openapi.json
+)
+app.mount("/mcp", mcp_asgi)
 ```
 
 `path="/"` is required — without it the internal route is `/mcp` and mounting the sub-app at `/mcp` would make it unreachable. The MCP lifespan must be passed to `FastAPI(lifespan=...)` or the session manager's task group won't initialise.
 
-All REST routes are under `/api/*`. The `/docs` Swagger UI and `/mcp` are siblings at the root — neither shadows the other because the mount is at `/mcp`, not `/`.
+All REST routes are under `/api/*`. Documentation is at `/api/docs` to avoid conflicts with frontend routing.
+
+### Production Architecture (nginx)
+
+In production, nginx serves on port 8000 and proxies to FastAPI on port 8001:
+
+```
+nginx (port 8000)
+  ├─ /api/*       → proxy to FastAPI (port 8001)
+  ├─ /mcp         → proxy to FastAPI (port 8001)
+  ├─ /api/docs    → proxy to FastAPI Swagger UI
+  ├─ /api/redoc   → proxy to FastAPI ReDoc
+  └─ /*           → serve React frontend (frontend/dist/)
+```
+
+nginx configuration includes:
+- User-writable pid and log files (`/tmp/nginx.pid`, `/tmp/nginx-*.log`)
+- MIME types for proper asset serving
+- Proxy headers for correct client IP forwarding
+- SSE streaming support for MCP (`proxy_buffering off`, HTTP/1.1)
 
 ### tools/ Pattern
 

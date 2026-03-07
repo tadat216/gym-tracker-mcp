@@ -21,6 +21,8 @@ cd frontend && npm install
 
 ## Development
 
+For local development without nginx:
+
 ```bash
 # Terminal 1 — backend (REST API + MCP) on port 8000
 cd backend && uv run python api.py
@@ -31,70 +33,115 @@ cd frontend && npm run dev
 # /api/* and /mcp are proxied to the backend automatically
 ```
 
-## Running (MCP only, local)
+Access:
+- **Frontend:** http://localhost:5173
+- **Backend API:** http://localhost:8000/api/...
+- **API Docs:** http://localhost:8000/api/docs
 
-```bash
-cd backend && uv run main.py
-# MCP endpoint: http://127.0.0.1:8000/mcp
-```
+## Quick Start with ngrok (for claude.ai)
 
-## Running with ngrok (for claude.ai)
-
-ngrok provides an HTTPS tunnel so claude.ai can reach your local server.
-
-### 1. Get your ngrok authtoken
-
-1. Sign up or log in at <https://dashboard.ngrok.com>
-2. Copy your authtoken from <https://dashboard.ngrok.com/get-started/your-authtoken>
-
-### 2. Start the server
+The fastest way to get your MCP server accessible to claude.ai:
 
 ```bash
 export NGROK_AUTHTOKEN=<your-token>
 ./backend/start.sh
 ```
 
-The script will print your public MCP endpoint, e.g.:
+This starts the backend on port 8000 with an ngrok tunnel. Connect in claude.ai with the printed URL.
 
-```
-======================================================
-  Gym Tracker MCP Server is running!
-======================================================
+> **Note:** This runs backend only (no frontend). For full-stack deployment, see Production section below.
 
-  MCP endpoint:  https://xxxx.ngrok-free.app/mcp
+## Production Deployment (nginx + ngrok)
 
-  To connect in claude.ai:
-    1. Go to claude.ai → Settings → Integrations
-    2. Add a new integration with URL:
-       https://xxxx.ngrok-free.app/mcp
+For production, use nginx to serve the frontend and proxy backend requests. This is the recommended setup.
 
-  ngrok inspector: http://127.0.0.1:4040
-======================================================
-```
+### Prerequisites
 
-### 3. Connect in claude.ai
+- nginx installed (`sudo apt install nginx`)
+- Node.js installed (for building frontend)
+- ngrok authtoken (for public access)
 
-1. Open [claude.ai](https://claude.ai) → **Settings** → **Integrations**
-2. Click **Add integration**
-3. Paste the `https://xxxx.ngrok-free.app/mcp` URL
-4. Save — the Gym Tracker tools will now be available in your conversations
-
-> **Note:** The ngrok URL changes each time you restart (free tier). Update the integration URL in claude.ai after each restart, or upgrade to a paid ngrok plan to use a static domain.
-
-## Production (nginx)
-
-nginx listens on port 8000, serves the React app as static files, and proxies API/MCP traffic to FastAPI on port 8001.
+### Step 1: Build Frontend
 
 ```bash
-# Build frontend
-cd frontend && npm run build
-
-# Start FastAPI on internal port 8001
-cd backend && API_PORT=8001 uv run python api.py &
-
-# Start nginx
-nginx -c /path/to/gym-tracker-mcp/nginx.conf
+cd frontend && npm install && npm run build
 ```
+
+This creates optimized static files in `frontend/dist/`.
+
+### Step 2: Start Backend on Port 8001
+
+```bash
+cd backend && API_PORT=8001 nohup uv run python api.py > /tmp/backend.log 2>&1 &
+```
+
+The backend runs on port 8001 (internal only, not exposed to internet).
+
+### Step 3: Start nginx on Port 8000
+
+```bash
+nginx -c /home/dev/gym-tracker-mcp/nginx.conf -g 'daemon off;'
+```
+
+nginx listens on port 8000 and:
+- Serves React frontend from `frontend/dist/`
+- Proxies `/api/*` to backend (port 8001)
+- Proxies `/mcp` to backend (port 8001)
+
+### Step 4: Expose with ngrok
+
+```bash
+export PATH="$HOME/.local/bin:$PATH"
+ngrok config add-authtoken "<your-token>"
+ngrok http 8000
+```
+
+Your app is now accessible at the ngrok URL (e.g., `https://xxxx.ngrok-free.dev`).
+
+### Architecture
+
+```
+Internet (HTTPS via ngrok)
+    ↓
+  ngrok tunnel
+    ↓
+  nginx (port 8000)
+    ├─ /api/*       → FastAPI (port 8001)
+    ├─ /mcp         → FastAPI (port 8001)
+    ├─ /api/docs    → FastAPI Swagger UI
+    └─ /*           → React frontend (static files)
+```
+
+### Public URLs
+
+Once deployed, your endpoints are:
+- **Frontend:** `https://xxxx.ngrok-free.dev/`
+- **REST API:** `https://xxxx.ngrok-free.dev/api/...`
+- **MCP Server:** `https://xxxx.ngrok-free.dev/mcp`
+- **API Docs:** `https://xxxx.ngrok-free.dev/api/docs`
+
+### Managing Processes
+
+All three services (backend, nginx, ngrok) should run simultaneously. Use tmux to manage them:
+
+```bash
+# Start tmux session
+tmux new -s gym-tracker
+
+# Pane 1: Backend
+cd backend && API_PORT=8001 uv run python api.py
+
+# Split window (Ctrl+b, then ")
+# Pane 2: nginx
+nginx -c /home/dev/gym-tracker-mcp/nginx.conf -g 'daemon off;'
+
+# Split again
+# Pane 3: ngrok
+ngrok http 8000
+```
+
+To detach from tmux: `Ctrl+b`, then `d`  
+To reattach: `tmux attach -t gym-tracker`
 
 ## Regenerating API hooks
 
