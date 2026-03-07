@@ -24,7 +24,7 @@ export function ExerciseLibraryView({
 
   return (
     <div className="space-y-3">
-      <Accordion type="multiple" className="w-full space-y-2">
+      <Accordion multiple className="w-full space-y-2">
         {muscleGroups.map((group) => (
           <MuscleGroupAccordion
             key={group.id}
