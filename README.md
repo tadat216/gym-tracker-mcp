@@ -1,28 +1,40 @@
 # Gym Tracker MCP Server
 
-A Python MCP server for tracking gym workouts, built with FastMCP and SQLite. Exposes 14 tools for logging workouts, exercises, and sets.
+A gym workout tracker with two interfaces — an MCP server for AI assistants (claude.ai) and a REST API for a React frontend. Built with FastMCP, FastAPI, and SQLite.
 
 ## Requirements
 
-- Python 3.12
-- [uv](https://docs.astral.sh/uv/getting-started/installation/)
-- [ngrok](https://ngrok.com/download) account (free tier works)
+- Python 3.12 + [uv](https://docs.astral.sh/uv/getting-started/installation/)
+- Node.js 18+
+- [ngrok](https://ngrok.com/download) account (free tier, for claude.ai access)
 
 ## Setup
 
 ```bash
-# Install dependencies
+# Backend
 cd backend && uv sync
+cd backend && uv run seed.py   # seed muscle groups and exercises
 
-# Seed the database with muscle groups and exercises
-cd backend && uv run seed.py
+# Frontend
+cd frontend && npm install
 ```
 
-## Running (local only)
+## Development
+
+```bash
+# Terminal 1 — backend (REST API + MCP) on port 8000
+cd backend && uv run python api.py
+
+# Terminal 2 — frontend dev server on port 5173
+cd frontend && npm run dev
+# Open http://localhost:5173
+# /api/* and /mcp are proxied to the backend automatically
+```
+
+## Running (MCP only, local)
 
 ```bash
 cd backend && uv run main.py
-# Server listens on http://127.0.0.1:8000
 # MCP endpoint: http://127.0.0.1:8000/mcp
 ```
 
@@ -69,12 +81,39 @@ The script will print your public MCP endpoint, e.g.:
 
 > **Note:** The ngrok URL changes each time you restart (free tier). Update the integration URL in claude.ai after each restart, or upgrade to a paid ngrok plan to use a static domain.
 
+## Production (nginx)
+
+nginx listens on port 8000, serves the React app as static files, and proxies API/MCP traffic to FastAPI on port 8001.
+
+```bash
+# Build frontend
+cd frontend && npm run build
+
+# Start FastAPI on internal port 8001
+cd backend && API_PORT=8001 uv run python api.py &
+
+# Start nginx
+nginx -c /path/to/gym-tracker-mcp/nginx.conf
+```
+
+## Regenerating API hooks
+
+When the backend API changes, re-export the OpenAPI spec and regenerate:
+
+```bash
+cd backend && uv run python api.py            # must be running
+curl http://localhost:8000/openapi.json > frontend/openapi.json
+cd frontend && npm run generate
+```
+
 ## Environment Variables
 
 | Variable | Default | Description |
 |---|---|---|
-| `MCP_HOST` | `127.0.0.1` | Host the server binds to |
-| `MCP_PORT` | `8000` | Port the server listens on |
+| `API_HOST` | `127.0.0.1` | Host for `api.py` |
+| `API_PORT` | `8000` | Port for `api.py` |
+| `MCP_HOST` | `127.0.0.1` | Host for `main.py` (MCP-only) |
+| `MCP_PORT` | `8000` | Port for `main.py` (MCP-only) |
 | `NGROK_AUTHTOKEN` | — | Required for `start.sh` |
 
 ## Available Tools

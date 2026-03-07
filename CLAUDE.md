@@ -12,6 +12,8 @@ Both share the same SQLite database through the same five service classes.
 
 ## Commands
 
+### Backend
+
 All Python commands run from the `backend/` directory. This project uses `uv` for package management.
 
 ```bash
@@ -37,6 +39,25 @@ cd backend && uv add <package>
 
 Python version: 3.12 (enforced via `backend/.python-version`). No tests or linters are configured.
 
+### Frontend
+
+All frontend commands run from the `frontend/` directory. Uses `npm`.
+
+```bash
+# Install dependencies
+cd frontend && npm install
+
+# Dev server (port 5173, proxies /api and /mcp to backend:8000)
+cd frontend && npm run dev
+
+# Production build (output to frontend/dist/)
+cd frontend && npm run build
+
+# Regenerate API hooks from OpenAPI spec (backend must be running on 8000)
+curl http://localhost:8000/openapi.json > frontend/openapi.json
+cd frontend && npm run generate
+```
+
 Environment variables:
 - `API_HOST` (default `127.0.0.1`), `API_PORT` (default `8000`) — used by `api.py` and `start.sh`
 - `MCP_HOST` (default `127.0.0.1`), `MCP_PORT` (default `8000`) — used by `main.py` only
@@ -47,18 +68,29 @@ Environment variables:
 ### Project Layout
 
 ```
-backend/
-├── api.py            ← combined entry point: FastAPI + FastMCP on one port
-├── main.py           ← MCP-only entry point (no REST)
-├── mcp_instance.py   ← creates the shared FastMCP instance, registers all tools
-├── deps.py           ← FastAPI get_session() dependency
-├── database.py       ← SQLModel models, SQLite engine, init_db()
-├── utils.py          ← Vietnam timezone (VN_TZ, today_vn())
-├── seed.py           ← idempotent DB seeder (8 muscle groups, ~40 exercises)
-├── start.sh          ← starts api.py + ngrok tunnel
-├── routers/          ← FastAPI APIRouter per resource (REST layer)
-├── tools/            ← FastMCP tool definitions per resource (MCP layer)
-└── services/         ← one service class per model (shared by both layers)
+gym-tracker-mcp/
+├── backend/
+│   ├── api.py            ← combined entry point: FastAPI + FastMCP on one port
+│   ├── main.py           ← MCP-only entry point (no REST)
+│   ├── mcp_instance.py   ← creates the shared FastMCP instance, registers all tools
+│   ├── deps.py           ← FastAPI get_session() dependency
+│   ├── database.py       ← SQLModel models, SQLite engine, init_db()
+│   ├── utils.py          ← Vietnam timezone (VN_TZ, today_vn())
+│   ├── seed.py           ← idempotent DB seeder (8 muscle groups, ~40 exercises)
+│   ├── start.sh          ← starts api.py + ngrok tunnel
+│   ├── routers/          ← FastAPI APIRouter per resource (REST layer)
+│   ├── tools/            ← FastMCP tool definitions per resource (MCP layer)
+│   └── services/         ← one service class per model (shared by both layers)
+├── frontend/
+│   ├── src/
+│   │   ├── api/          ← orval-generated hooks + types (gitignored, regenerate with npm run generate)
+│   │   ├── lib/
+│   │   │   └── axios-instance.ts  ← custom axios mutator for orval (hand-written, committed)
+│   │   └── main.tsx      ← React entry point, QueryClientProvider wrapper
+│   ├── openapi.json      ← committed OpenAPI spec snapshot (source for codegen)
+│   └── orval.config.ts   ← orval codegen config (tags-split, react-query, axios)
+├── nginx.conf            ← production: port 8000 → FastAPI:8001 + frontend/dist/
+└── docs/plans/           ← design docs and implementation plans
 ```
 
 ### Layers
