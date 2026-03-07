@@ -24,7 +24,7 @@ export function AppSidebar() {
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton isActive>
-                  <Dumbbell className="h-4 w-4" />
+                  <Dumbbell />
                   <span>Exercise Library</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>

@@ -24,7 +24,7 @@ export function ExerciseLibraryView({
 
   return (
     <div className="space-y-3">
-      <Accordion multiple className="w-full space-y-2">
+      <Accordion multiple className="space-y-2">
         {muscleGroups.map((group) => (
           <MuscleGroupAccordion
             key={group.id}
@@ -36,10 +36,10 @@ export function ExerciseLibraryView({
       </Accordion>
 
       {isAdding ? (
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 p-3 border rounded-lg">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 border rounded-lg">
           <Input
             placeholder="Muscle group name (English)"
-            className="flex-1 h-9"
+            className="flex-1"
             value={newName}
             onChange={(e) => onNewNameChange(e.target.value)}
             disabled={isCreating}
@@ -47,23 +47,23 @@ export function ExerciseLibraryView({
           />
           <Input
             placeholder="Tên nhóm cơ (tiếng Việt)"
-            className="flex-1 h-9"
+            className="flex-1"
             value={newVnName}
             onChange={(e) => onNewVnNameChange(e.target.value)}
             disabled={isCreating}
           />
           <div className="flex gap-1">
-            <Button size="icon" variant="ghost" className="h-9 w-9" onClick={onCreate} disabled={isCreating}>
-              <Check className="h-4 w-4" />
+            <Button size="icon" variant="ghost" onClick={onCreate} disabled={isCreating}>
+              <Check />
             </Button>
-            <Button size="icon" variant="ghost" className="h-9 w-9" onClick={onCancelAdd} disabled={isCreating}>
-              <X className="h-4 w-4" />
+            <Button size="icon" variant="ghost" onClick={onCancelAdd} disabled={isCreating}>
+              <X />
             </Button>
           </div>
         </div>
       ) : (
         <Button variant="outline" className="w-full sm:w-auto" onClick={onAdd}>
-          <Plus className="h-4 w-4 mr-2" />
+          <Plus />
           Add Muscle Group
         </Button>
       )}

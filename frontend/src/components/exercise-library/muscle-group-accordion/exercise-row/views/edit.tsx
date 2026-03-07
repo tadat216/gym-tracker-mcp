@@ -13,12 +13,12 @@ export function ExerciseRowEditView({
   onCancel,
 }: ExerciseRowEditViewProps) {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center gap-2 py-2 px-3">
+    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
       <Input
         value={name}
         onChange={(e) => onNameChange(e.target.value)}
         placeholder="Name (English)"
-        className="flex-1 h-8 text-sm"
+        className="flex-1"
         disabled={isSaving}
         autoFocus
       />
@@ -26,15 +26,15 @@ export function ExerciseRowEditView({
         value={vnName}
         onChange={(e) => onVnNameChange(e.target.value)}
         placeholder="Tên tiếng Việt"
-        className="flex-1 h-8 text-sm"
+        className="flex-1"
         disabled={isSaving}
       />
       <div className="flex gap-1">
-        <Button size="icon" variant="ghost" className="h-8 w-8" onClick={onSave} disabled={isSaving}>
-          <Check className="h-3.5 w-3.5" />
+        <Button size="icon" variant="ghost" onClick={onSave} disabled={isSaving}>
+          <Check />
         </Button>
-        <Button size="icon" variant="ghost" className="h-8 w-8" onClick={onCancel} disabled={isSaving}>
-          <X className="h-3.5 w-3.5" />
+        <Button size="icon" variant="ghost" onClick={onCancel} disabled={isSaving}>
+          <X />
         </Button>
       </div>
     </div>

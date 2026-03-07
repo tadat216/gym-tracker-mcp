@@ -8,9 +8,9 @@ function App() {
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
-        <header className="flex h-14 items-center gap-2 border-b px-4">
-          <SidebarTrigger className="-ml-1" />
-          <Separator orientation="vertical" className="h-4" />
+        <header className="flex items-center gap-2 border-b px-4">
+          <SidebarTrigger />
+          <Separator orientation="vertical" />
           <span className="font-medium">Exercise Library</span>
         </header>
         <main className="flex-1 p-4 max-w-3xl">
