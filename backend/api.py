@@ -11,7 +11,7 @@ from routers import exercises, muscle_groups, sets, workout_exercises, workouts
 init_db()
 
 # Build the MCP ASGI app first so we can pass its lifespan to FastAPI
-mcp_asgi = mcp.http_app(transport="streamable-http")
+mcp_asgi = mcp.http_app(path="/", transport="streamable-http")
 
 app = FastAPI(title="Gym Tracker API", version="1.0.0", lifespan=mcp_asgi.lifespan)
 
@@ -30,7 +30,7 @@ app.include_router(workout_exercises.router, prefix="/api/workout-exercises", ta
 app.include_router(sets.router, prefix="/api/sets", tags=["sets"])
 
 # Mount MCP server — endpoint available at /mcp
-app.mount("/", mcp_asgi)
+app.mount("/mcp", mcp_asgi)
 
 if __name__ == "__main__":
     host = os.getenv("API_HOST", "127.0.0.1")
