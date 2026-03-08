@@ -5,19 +5,12 @@ from dotenv import load_dotenv
 load_dotenv()
 
 import uvicorn
-from fastapi import Depends, FastAPI, HTTPException, Request, status
+from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import Response as FastAPIResponse
 from fastmcp import FastMCP
 from pydantic import BaseModel
 
-from auth import (
-    AUTH_PASSWORD,
-    AUTH_USERNAME,
-    GymTrackerOAuthProvider,
-    create_jwt,
-    require_auth,
-)
+from auth import AUTH_PASSWORD, AUTH_USERNAME, create_jwt, require_auth
 from database import init_db
 from routers import exercises, muscle_groups, sets, workout_exercises, workouts
 from tools import (
@@ -30,8 +23,7 @@ from tools import (
 
 init_db()
 
-_base_url = os.getenv("MCP_BASE_URL", "http://127.0.0.1:8000/mcp")
-mcp = FastMCP("Gym Tracker", auth=GymTrackerOAuthProvider(base_url=_base_url))
+mcp = FastMCP("Gym Tracker")
 tools_muscle_groups.register(mcp)
 tools_exercises.register(mcp)
 tools_workouts.register(mcp)
@@ -90,39 +82,7 @@ app.include_router(workouts.router, prefix="/api/workouts", tags=["workouts"], d
 app.include_router(workout_exercises.router, prefix="/api/workout-exercises", tags=["workout-exercises"], dependencies=_auth_dep)
 app.include_router(sets.router, prefix="/api/sets", tags=["sets"], dependencies=_auth_dep)
 
-# ── OAuth discovery at root level (RFC 8414) ─────────────────────────────────
-# FastMCP serves /.well-known/oauth-authorization-server inside its own ASGI
-# (accessible at /mcp/.well-known/...), but RFC 8414 root-path discovery also
-# requires it at the bare /.well-known/ path.  Forward the request directly
-# into mcp_asgi so the response is identical with no redirect needed.
-
-@app.get("/.well-known/oauth-authorization-server", include_in_schema=False)
-async def oauth_discovery_root(request: Request):
-    scope = dict(request.scope)
-    scope["path"] = "/.well-known/oauth-authorization-server"
-    scope["raw_path"] = b"/.well-known/oauth-authorization-server"
-
-    status_code = 200
-    resp_headers: list = []
-    body = bytearray()
-
-    async def send(message: dict) -> None:
-        nonlocal status_code, resp_headers
-        if message["type"] == "http.response.start":
-            status_code = message["status"]
-            resp_headers = list(message.get("headers", []))
-        elif message["type"] == "http.response.body":
-            body.extend(message.get("body", b""))
-
-    await mcp_asgi(scope, request.receive, send)
-    return FastAPIResponse(
-        content=bytes(body),
-        status_code=status_code,
-        headers={k.decode(): v.decode() for k, v in resp_headers},
-    )
-
-
-# Mount MCP server — endpoint available at /mcp
+# Mount MCP server — endpoint available at /mcp (no auth required)
 app.mount("/mcp", mcp_asgi)
 
 if __name__ == "__main__":
