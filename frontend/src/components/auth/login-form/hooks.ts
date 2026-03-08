@@ -3,11 +3,8 @@ import { useApiLoginApiAuthLoginPost } from "@/api/auth/auth";
 import { useAuth } from "@/contexts/auth-context";
 
 export function useLoginForm() {
-  const defaultUsername = import.meta.env.VITE_USERNAME ?? "";
-  const defaultPassword = import.meta.env.VITE_PASSWORD ?? "";
-
-  const [username, setUsername] = useState(defaultUsername);
-  const [password, setPassword] = useState(defaultPassword);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   const { login } = useAuth();
