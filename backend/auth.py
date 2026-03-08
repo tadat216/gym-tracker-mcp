@@ -69,6 +69,7 @@ class GymTrackerOAuthProvider(OAuthProvider):
             redirect_uris=["https://claude.ai/api/mcp/auth_callback", "https://claude.ai/oauth/callback", "http://localhost"],
             grant_types=["authorization_code", "refresh_token"],
             response_types=["code"],
+            scope="claudeai",
         )
 
     # ── OAuthAuthorizationServerProvider protocol ─────────────────────────────
