@@ -23,6 +23,4 @@ dist-ssr
 *.sln
 *.sw?
 
-# orval generated output — regenerate with: npm run generate
-src/api/*.ts
-src/api/model/
+# orval generated output — committed to git; regenerate with: npm run generate
