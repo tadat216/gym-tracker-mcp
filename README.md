@@ -10,18 +10,32 @@ A gym workout tracker with two interfaces — an MCP server for AI assistants (c
 
 ## Setup
 
-```bash
-# Backend
-cd backend && uv sync
-cd backend && uv run seed.py   # seed muscle groups and exercises
+### 1. Backend
 
-# Frontend
+```bash
+cd backend && uv sync
+cp backend/.env.example backend/.env   # then fill in real values
+cd backend && uv run seed.py           # seed muscle groups and exercises
+```
+
+Edit `backend/.env`:
+
+```
+MCP_CLIENT_ID=gym-tracker-mcp
+MCP_CLIENT_SECRET=<python -c "import secrets; print(secrets.token_hex(32))">
+MCP_BASE_URL=http://127.0.0.1:8000/mcp   # change to public URL in production
+AUTH_USERNAME=admin
+AUTH_PASSWORD=<your password>
+JWT_SECRET=<python -c "import secrets; print(secrets.token_hex(32))">
+```
+
+### 2. Frontend
+
+```bash
 cd frontend && npm install
 ```
 
 ## Development
-
-For local development without nginx:
 
 ```bash
 # Terminal 1 — backend (REST API + MCP) on port 8000
@@ -35,122 +49,74 @@ cd frontend && npm run dev
 
 Access:
 - **Frontend:** http://localhost:5173
-- **Backend API:** http://localhost:8000/api/...
 - **API Docs:** http://localhost:8000/api/docs
 
-## Quick Start with ngrok (for claude.ai)
+## Authentication
 
-The fastest way to get your MCP server accessible to claude.ai:
+The app uses two separate auth systems backed by the same credentials in `backend/.env`:
 
-```bash
-export NGROK_AUTHTOKEN=<your-token>
-./backend/start.sh
-```
+**React frontend** — logs in at `/login` with a username/password form, gets a JWT (24h), stored in `localStorage`. All API calls include it as `Authorization: Bearer`.
 
-This starts the backend on port 8000 with an ngrok tunnel. Connect in claude.ai with the printed URL.
+**claude.ai MCP** — uses OAuth 2.1. When connecting in claude.ai:
+1. Enter the MCP URL (e.g. `https://your-server/mcp`)
+2. Enter `MCP_CLIENT_ID` and `MCP_CLIENT_SECRET` from your `.env`
+3. claude.ai will open a browser login form — enter your `AUTH_USERNAME`/`AUTH_PASSWORD`
+4. MCP tools are now available
 
-> **Note:** This runs backend only (no frontend). For full-stack deployment, see Production section below.
+> **Note:** MCP tokens are stored in memory and cleared on server restart. After a restart, re-authenticate in claude.ai by reconnecting the MCP server.
 
 ## Production Deployment (nginx + ngrok)
 
-For production, use nginx to serve the frontend and proxy backend requests. This is the recommended setup.
+### Step 1: Configure `.env`
 
-### Prerequisites
-
-- nginx installed (`sudo apt install nginx`)
-- Node.js installed (for building frontend)
-- ngrok authtoken (for public access)
-
-### Step 1: Build Frontend
-
-```bash
-cd frontend && npm install && npm run build
+Set `MCP_BASE_URL` to your public URL:
+```
+MCP_BASE_URL=https://xxxx.ngrok-free.dev/mcp
 ```
 
-This creates optimized static files in `frontend/dist/`.
-
-### Step 2: Start Backend on Port 8001
+### Step 2: Build and deploy
 
 ```bash
+# Build frontend
+cd frontend && npm run build
+
+# Start backend on port 8001 (internal)
 cd backend && API_PORT=8001 nohup uv run python api.py > /tmp/backend.log 2>&1 &
-```
 
-The backend runs on port 8001 (internal only, not exposed to internet).
-
-### Step 3: Start nginx on Port 8000
-
-```bash
+# Start nginx on port 8000
 nginx -c /home/dev/gym-tracker-mcp/nginx.conf -g 'daemon off;'
-```
 
-nginx listens on port 8000 and:
-- Serves React frontend from `frontend/dist/`
-- Proxies `/api/*` to backend (port 8001)
-- Proxies `/mcp` to backend (port 8001)
-
-### Step 4: Expose with ngrok
-
-```bash
-export PATH="$HOME/.local/bin:$PATH"
-ngrok config add-authtoken "<your-token>"
+# Expose via ngrok
 ngrok http 8000
 ```
-
-Your app is now accessible at the ngrok URL (e.g., `https://xxxx.ngrok-free.dev`).
 
 ### Architecture
 
 ```
 Internet (HTTPS via ngrok)
     ↓
-  ngrok tunnel
-    ↓
   nginx (port 8000)
-    ├─ /api/*       → FastAPI (port 8001)
-    ├─ /mcp         → FastAPI (port 8001)
-    ├─ /api/docs    → FastAPI Swagger UI
-    └─ /*           → React frontend (static files)
+    ├─ /api/*  → FastAPI (port 8001)
+    ├─ /mcp    → FastAPI (port 8001)
+    └─ /*      → React frontend (frontend/dist/)
 ```
 
-### Public URLs
-
-Once deployed, your endpoints are:
-- **Frontend:** `https://xxxx.ngrok-free.dev/`
-- **REST API:** `https://xxxx.ngrok-free.dev/api/...`
-- **MCP Server:** `https://xxxx.ngrok-free.dev/mcp`
-- **API Docs:** `https://xxxx.ngrok-free.dev/api/docs`
-
-### Managing Processes
-
-All three services (backend, nginx, ngrok) should run simultaneously. Use tmux to manage them:
-
+Use tmux to manage all three processes simultaneously:
 ```bash
-# Start tmux session
 tmux new -s gym-tracker
-
-# Pane 1: Backend
-cd backend && API_PORT=8001 uv run python api.py
-
-# Split window (Ctrl+b, then ")
-# Pane 2: nginx
-nginx -c /home/dev/gym-tracker-mcp/nginx.conf -g 'daemon off;'
-
-# Split again
-# Pane 3: ngrok
-ngrok http 8000
+# Pane 1: backend, Pane 2: nginx, Pane 3: ngrok
+# Ctrl+b d to detach, tmux attach -t gym-tracker to reattach
 ```
-
-To detach from tmux: `Ctrl+b`, then `d`  
-To reattach: `tmux attach -t gym-tracker`
 
 ## Regenerating API hooks
 
-When the backend API changes, re-export the OpenAPI spec and regenerate:
+When the backend API changes:
 
 ```bash
-cd backend && uv run python api.py            # must be running
-curl http://localhost:8000/openapi.json > frontend/openapi.json
+cd backend && uv run python api.py   # must be running
+curl http://localhost:8000/api/openapi.json > frontend/openapi.json
 cd frontend && npm run generate
+git add frontend/openapi.json frontend/src/api/
 ```
 
 ## Environment Variables
@@ -159,11 +125,14 @@ cd frontend && npm run generate
 |---|---|---|
 | `API_HOST` | `127.0.0.1` | Host for `api.py` |
 | `API_PORT` | `8000` | Port for `api.py` |
-| `MCP_HOST` | `127.0.0.1` | Host for `main.py` (MCP-only) |
-| `MCP_PORT` | `8000` | Port for `main.py` (MCP-only) |
-| `NGROK_AUTHTOKEN` | — | Required for `start.sh` |
+| `MCP_CLIENT_ID` | — | OAuth client ID (shown to claude.ai) |
+| `MCP_CLIENT_SECRET` | — | OAuth client secret (shown to claude.ai) |
+| `MCP_BASE_URL` | `http://127.0.0.1:8000/mcp` | Public MCP URL (must match deployment) |
+| `AUTH_USERNAME` | — | Login username for both web and MCP |
+| `AUTH_PASSWORD` | — | Login password for both web and MCP |
+| `JWT_SECRET` | — | Secret for signing REST API JWTs |
 
-## Available Tools
+## Available MCP Tools
 
 | Tool | Description |
 |---|---|
