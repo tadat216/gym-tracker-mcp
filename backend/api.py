@@ -5,23 +5,37 @@ from dotenv import load_dotenv
 load_dotenv()
 
 import uvicorn
-from fastapi import Depends, FastAPI, Form, HTTPException, status
+from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastmcp import FastMCP
 from pydantic import BaseModel
 
 from auth import (
     AUTH_PASSWORD,
     AUTH_USERNAME,
-    LOGIN_FORM_HTML,
+    GymTrackerOAuthProvider,
     create_jwt,
     require_auth,
 )
 from database import init_db
-from mcp_instance import mcp
 from routers import exercises, muscle_groups, sets, workout_exercises, workouts
+from tools import (
+    exercises as tools_exercises,
+    muscle_groups as tools_muscle_groups,
+    sets as tools_sets,
+    workout_exercises as tools_workout_exercises,
+    workouts as tools_workouts,
+)
 
 init_db()
+
+_base_url = os.getenv("MCP_BASE_URL", "http://127.0.0.1:8000/mcp")
+mcp = FastMCP("Gym Tracker", auth=GymTrackerOAuthProvider(base_url=_base_url))
+tools_muscle_groups.register(mcp)
+tools_exercises.register(mcp)
+tools_workouts.register(mcp)
+tools_workout_exercises.register(mcp)
+tools_sets.register(mcp)
 
 # Build the MCP ASGI app first so we can pass its lifespan to FastAPI
 mcp_asgi = mcp.http_app(path="/", transport="streamable-http")
@@ -42,41 +56,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# ── MCP OAuth login form routes ───────────────────────────────────────────────
-# These must be FastAPI routes (not MCP routes) so they're served on the main app.
-# The MCP OAuth provider redirects to /auth/login; these routes handle the form.
-
-@app.get("/auth/login", response_class=HTMLResponse, include_in_schema=False)
-async def login_page(request_id: str):
-    """Serve the OAuth login form."""
-    return LOGIN_FORM_HTML.format(request_id=request_id, error="")
-
-
-@app.post("/auth/login", include_in_schema=False)
-async def login_submit(
-    request_id: str = Form(...),
-    username: str = Form(...),
-    password: str = Form(...),
-):
-    """Handle login form POST. Validates credentials and completes OAuth flow."""
-    provider = mcp.auth  # type: ignore[attr-defined]
-
-    if username != AUTH_USERNAME or password != AUTH_PASSWORD:
-        return HTMLResponse(
-            LOGIN_FORM_HTML.format(
-                request_id=request_id,
-                error='<p class="error">Invalid username or password.</p>',
-            ),
-            status_code=200,
-        )
-
-    redirect_url = provider.complete_authorization(request_id, username)
-    if redirect_url is None:
-        raise HTTPException(status_code=400, detail="Invalid or expired login request")
-
-    return RedirectResponse(url=redirect_url, status_code=302)
-
 
 # ── REST auth endpoint ────────────────────────────────────────────────────────
 
