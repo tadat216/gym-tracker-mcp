@@ -1,6 +1,6 @@
 """
 Authentication for Gym Tracker:
-- GymTrackerOAuthProvider: FastMCP OAuth 2.0 provider for claude.ai MCP connections
+- GymTrackerOAuthProvider: FastMCP OAuth 2.1 provider for claude.ai MCP connections
 - create_jwt / require_auth: JWT helpers for the REST API
 """
 
@@ -37,43 +37,6 @@ JWT_SECRET = os.environ["JWT_SECRET"]
 MCP_TOKEN_EXPIRY = 30 * 24 * 60 * 60   # 30 days (long-lived for MCP)
 REST_TOKEN_EXPIRY = 24 * 60 * 60        # 24 hours for REST
 
-# ── Login form HTML ───────────────────────────────────────────────────────────
-
-LOGIN_FORM_HTML = """<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gym Tracker — Login</title>
-  <style>
-    body {{ font-family: system-ui, sans-serif; display: flex; align-items: center;
-            justify-content: center; min-height: 100vh; margin: 0; background: #f5f5f5; }}
-    form {{ background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,.1);
-            width: 300px; }}
-    h1 {{ margin: 0 0 1.5rem; font-size: 1.25rem; }}
-    label {{ display: block; margin-bottom: .25rem; font-size: .875rem; color: #555; }}
-    input {{ width: 100%; padding: .5rem; margin-bottom: 1rem; border: 1px solid #ddd;
-             border-radius: 4px; box-sizing: border-box; font-size: 1rem; }}
-    button {{ width: 100%; padding: .625rem; background: #1a1a1a; color: white;
-              border: none; border-radius: 4px; font-size: 1rem; cursor: pointer; }}
-    button:hover {{ background: #333; }}
-    .error {{ color: #c00; font-size: .875rem; margin-bottom: 1rem; }}
-  </style>
-</head>
-<body>
-  <form method="POST" action="/auth/login">
-    <h1>Gym Tracker</h1>
-    {error}
-    <label>Username</label>
-    <input type="text" name="username" required autofocus>
-    <label>Password</label>
-    <input type="password" name="password" required>
-    <input type="hidden" name="request_id" value="{request_id}">
-    <button type="submit">Sign in</button>
-  </form>
-</body>
-</html>"""
-
 # ── GymTrackerOAuthProvider ───────────────────────────────────────────────────
 
 
@@ -82,7 +45,7 @@ class GymTrackerOAuthProvider(OAuthProvider):
     Single-user OAuth 2.1 provider for the Gym Tracker MCP server.
 
     - One pre-registered client (MCP_CLIENT_ID / MCP_CLIENT_SECRET from env)
-    - Login form at /auth/login validates AUTH_USERNAME / AUTH_PASSWORD
+    - Auto-approves the authorization step — no interactive login form
     - Access tokens are opaque secrets stored in memory
     - No dynamic client registration (pre-configured client only)
     """
@@ -95,7 +58,6 @@ class GymTrackerOAuthProvider(OAuthProvider):
             revocation_options=RevocationOptions(enabled=True),
         )
         # In-memory stores (single user, single process — fine for personal use)
-        self._pending_requests: dict[str, tuple[OAuthClientInformationFull, AuthorizationParams]] = {}
         self._auth_codes: dict[str, AuthorizationCode] = {}
         self._access_tokens: dict[str, AccessToken] = {}
         self._refresh_tokens: dict[str, RefreshToken] = {}
@@ -104,7 +66,7 @@ class GymTrackerOAuthProvider(OAuthProvider):
         self._client = OAuthClientInformationFull(
             client_id=MCP_CLIENT_ID,
             client_secret=MCP_CLIENT_SECRET,
-            redirect_uris=["https://claude.ai/oauth/callback", "http://localhost"],
+            redirect_uris=["https://claude.ai/api/mcp/auth_callback", "https://claude.ai/oauth/callback", "http://localhost"],
             grant_types=["authorization_code", "refresh_token"],
             response_types=["code"],
         )
@@ -123,23 +85,11 @@ class GymTrackerOAuthProvider(OAuthProvider):
     async def authorize(
         self, client: OAuthClientInformationFull, params: AuthorizationParams
     ) -> str:
-        """Store OAuth params and redirect to the login form."""
-        request_id = secrets.token_urlsafe(32)
-        self._pending_requests[request_id] = (client, params)
-        return f"/auth/login?request_id={request_id}"
+        """Auto-approve: issue an auth code immediately and redirect back to client.
 
-    def complete_authorization(
-        self, request_id: str, username: str
-    ) -> str | None:
+        No login form — for a personal single-user server the client_id/secret
+        is sufficient; the secret is required again at the token exchange step.
         """
-        Called after successful login. Creates auth code, returns redirect URI.
-        Returns None if request_id is unknown.
-        """
-        entry = self._pending_requests.pop(request_id, None)
-        if entry is None:
-            return None
-        client, params = entry
-
         code = secrets.token_urlsafe(32)
         auth_code = AuthorizationCode(
             code=code,
@@ -151,7 +101,6 @@ class GymTrackerOAuthProvider(OAuthProvider):
             code_challenge=params.code_challenge,
         )
         self._auth_codes[code] = auth_code
-
         return construct_redirect_uri(
             str(params.redirect_uri), code=code, state=params.state
         )
