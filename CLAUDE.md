@@ -5,8 +5,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Project Overview
 
 A Python backend for tracking gym workouts with two interfaces on a single port:
-- **MCP server** (FastMCP, `streamable-http`) — for AI assistants via claude.ai
-- **REST API** (FastAPI) — for the React frontend
+- **MCP server** (FastMCP, `streamable-http`) — for AI assistants via claude.ai, protected by OAuth 2.1
+- **REST API** (FastAPI) — for the React frontend, protected by JWT Bearer tokens
 
 Both share the same SQLite database through the same five service classes.
 
@@ -72,6 +72,7 @@ ngrok http 8000
 Environment variables:
 - `API_HOST` (default `127.0.0.1`), `API_PORT` (default `8000`) — used by `api.py`
 - `MCP_HOST` (default `127.0.0.1`), `MCP_PORT` (default `8000`) — used by `main.py` only
+- Auth vars (required — see `backend/.env.example`): `MCP_CLIENT_ID`, `MCP_CLIENT_SECRET`, `MCP_BASE_URL`, `AUTH_USERNAME`, `AUTH_PASSWORD`, `JWT_SECRET`
 
 ## Architecture
 
@@ -82,20 +83,26 @@ gym-tracker-mcp/
 ├── backend/
 │   ├── api.py            ← combined entry point: FastAPI + FastMCP on one port
 │   ├── main.py           ← MCP-only entry point (no REST)
-│   ├── mcp_instance.py   ← creates the shared FastMCP instance, registers all tools
+│   ├── mcp_instance.py   ← creates the shared FastMCP instance with OAuth, registers all tools
+│   ├── auth.py           ← GymTrackerOAuthProvider (MCP OAuth 2.1) + JWT helpers (REST)
 │   ├── deps.py           ← FastAPI get_session() dependency
 │   ├── database.py       ← SQLModel models, SQLite engine, init_db()
 │   ├── utils.py          ← Vietnam timezone (VN_TZ, today_vn())
 │   ├── seed.py           ← idempotent DB seeder (8 muscle groups, ~40 exercises)
+│   ├── .env              ← secrets (gitignored); copy from .env.example
 │   ├── routers/          ← FastAPI APIRouter per resource (REST layer)
 │   ├── tools/            ← FastMCP tool definitions per resource (MCP layer)
 │   └── services/         ← one service class per model (shared by both layers)
 ├── frontend/
 │   ├── src/
-│   │   ├── api/          ← orval-generated hooks + types (gitignored, regenerate with npm run generate)
+│   │   ├── api/          ← orval-generated hooks + types (committed; regenerate with npm run generate)
+│   │   ├── components/
+│   │   │   └── auth/login-form/  ← login form (hooks/views/container pattern)
+│   │   ├── contexts/
+│   │   │   └── auth-context.tsx  ← JWT token state + TOKEN_KEY constant
 │   │   ├── lib/
-│   │   │   └── axios-instance.ts  ← custom axios mutator for orval (hand-written, committed)
-│   │   └── main.tsx      ← React entry point, QueryClientProvider wrapper
+│   │   │   └── axios-instance.ts ← custom axios mutator; attaches JWT, redirects on 401
+│   │   └── main.tsx      ← React entry: BrowserRouter + AuthProvider + ProtectedRoute
 │   ├── openapi.json      ← committed OpenAPI spec snapshot (source for codegen)
 │   └── orval.config.ts   ← orval codegen config (tags-split, react-query, axios)
 ├── nginx.conf            ← production: port 8000 → FastAPI:8001 + frontend/dist/
@@ -106,13 +113,33 @@ gym-tracker-mcp/
 
 ```
 api.py  (FastAPI app + FastMCP mounted at /mcp)
-   ├── routers/   (REST — /api/* routes, use Depends(get_session))
-   ├── tools/     (MCP — register(mcp) pattern, open their own sessions)
+   ├── auth.py    (GymTrackerOAuthProvider for MCP; require_auth dependency for REST)
+   ├── routers/   (REST — /api/* routes, use Depends(get_session) + Depends(require_auth))
+   ├── tools/     (MCP — register(mcp) pattern, open their own sessions; protected by OAuth)
    └── services/  (shared DB logic — one class per model, accepts Session)
             └── database.py  (SQLModel models + SQLite engine)
 ```
 
 `main.py` bypasses the REST layer entirely — it imports `mcp` from `mcp_instance.py` and runs it standalone.
+
+### Authentication Architecture
+
+Two independent auth systems share the same `AUTH_USERNAME`/`AUTH_PASSWORD` from `.env`:
+
+**MCP OAuth 2.1** (`GymTrackerOAuthProvider` in `auth.py`):
+- `mcp_instance.py` passes the provider to `FastMCP(..., auth=...)`
+- FastMCP serves `/.well-known/oauth-authorization-server`, `/mcp/authorize`, `/mcp/token`
+- `api.py` serves the login form at `GET/POST /auth/login` (FastAPI routes, not MCP routes)
+- Tokens are stored in memory — cleared on server restart, requiring re-auth in claude.ai
+- `MCP_BASE_URL` must be set to the public URL in production (e.g. `https://your-domain.com/mcp`)
+
+**REST JWT** (`create_jwt` / `require_auth` in `auth.py`):
+- `POST /api/auth/login` exchanges credentials for a 24-hour JWT
+- All `/api/*` routers include `Depends(require_auth)` as a router-level dependency
+- Frontend stores the token in `localStorage` under `TOKEN_KEY` (defined in `auth-context.tsx`)
+- `axios-instance.ts` attaches the token to every request and redirects to `/login` on 401
+
+**Critical import order**: `api.py` calls `load_dotenv()` before any local imports because `auth.py` reads env vars at module level.
 
 ### Single-Port Design (Development)
 
@@ -120,16 +147,11 @@ In development mode, `api.py` serves everything on port 8000:
 
 ```python
 mcp_asgi = mcp.http_app(path="/", transport="streamable-http")
-app = FastAPI(
-    lifespan=mcp_asgi.lifespan,
-    docs_url="/api/docs",          # Swagger UI at /api/docs
-    redoc_url="/api/redoc",         # ReDoc at /api/redoc
-    openapi_url="/api/openapi.json" # OpenAPI spec at /api/openapi.json
-)
+app = FastAPI(lifespan=mcp_asgi.lifespan, ...)
 app.mount("/mcp", mcp_asgi)
 ```
 
-`path="/"` is required — without it the internal route is `/mcp` and mounting the sub-app at `/mcp` would make it unreachable. The MCP lifespan must be passed to `FastAPI(lifespan=...)` or the session manager's task group won't initialise.
+`path="/"` is required — without it the internal route is `/mcp` and mounting at `/mcp` would make it unreachable. The MCP lifespan must be passed to `FastAPI(lifespan=...)` or the session manager's task group won't initialise.
 
 All REST routes are under `/api/*`. Documentation is at `/api/docs` to avoid conflicts with frontend routing.
 
@@ -141,16 +163,10 @@ In production, nginx serves on port 8000 and proxies to FastAPI on port 8001:
 nginx (port 8000)
   ├─ /api/*       → proxy to FastAPI (port 8001)
   ├─ /mcp         → proxy to FastAPI (port 8001)
-  ├─ /api/docs    → proxy to FastAPI Swagger UI
-  ├─ /api/redoc   → proxy to FastAPI ReDoc
   └─ /*           → serve React frontend (frontend/dist/)
 ```
 
-nginx configuration includes:
-- User-writable pid and log files (`/tmp/nginx.pid`, `/tmp/nginx-*.log`)
-- MIME types for proper asset serving
-- Proxy headers for correct client IP forwarding
-- SSE streaming support for MCP (`proxy_buffering off`, HTTP/1.1)
+nginx configuration includes SSE streaming support for MCP (`proxy_buffering off`, HTTP/1.1) and user-writable pid/log paths for non-root deployments.
 
 ### tools/ Pattern
 
@@ -158,7 +174,21 @@ Each module exposes a `register(mcp: FastMCP)` function that defines and decorat
 
 ### routers/ Pattern
 
-Each module exposes a `router = APIRouter()`. Routers get a `Session` via `Depends(get_session)` from `deps.py`. All five are included in `api.py` with the `/api/<resource>` prefix.
+Each module exposes a `router = APIRouter()`. Routers get a `Session` via `Depends(get_session)` from `deps.py`. All five are included in `api.py` with the `/api/<resource>` prefix and a shared `Depends(require_auth)` dependency.
+
+### Frontend Component Pattern
+
+Components follow a strict `hooks → views → container` structure co-located per component:
+```
+component-name/
+  types.ts       ← prop interfaces
+  hooks.ts       ← data fetching + state logic
+  views/
+    main.tsx     ← pure presentational (one component per file)
+    index.ts     ← barrel export
+  container.tsx  ← composes hook + view; handles routing/auth guards
+  index.ts       ← exports container only
+```
 
 ### Database Schema
 
@@ -176,7 +206,7 @@ muscle_groups → exercises → workout_exercises → workout_exercises_details
 - `workout_exercises(id, workout_id, exercise_id)` — join table; no update method
 - `workout_exercises_details(id, workout_exercise_id, rep_count, weight)` — one row per set; `weight` in kg
 
-`init_db()` calls `SQLModel.metadata.create_all(engine)` and must be called before the first request. Both `api.py` and `main.py` call it at startup.
+`init_db()` calls `SQLModel.metadata.create_all(engine)` and must be called before the first request.
 
 ### Key Design Points
 
@@ -187,3 +217,5 @@ muscle_groups → exercises → workout_exercises → workout_exercises_details
 - `WorkoutService` has the most query methods: `get_or_create`, `list_last_n_days`, `list_in_date_range`, `list_in_month`.
 - `WorkoutExerciseService` has no `update` method (the join table has no mutable fields).
 - The MCP `update_set` tool requires both `rep_count` and `weight`; the REST `PATCH /api/sets/{id}` accepts either field as optional.
+- `TOKEN_KEY` (`"gym_tracker_token"`) is defined and exported from `auth-context.tsx` — import it rather than hardcoding the string elsewhere.
+- Never embed credentials in `VITE_*` env vars — they are inlined into the JS bundle at build time.
