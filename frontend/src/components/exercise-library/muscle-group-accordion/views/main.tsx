@@ -36,7 +36,7 @@ export function MuscleGroupAccordionView({
     <AccordionItem value={String(muscleGroup.id)} className="border rounded-lg">
       <AccordionTrigger className="group/trigger hover:no-underline">
         {isEditing ? (
-          <div className="flex flex-1 flex-col sm:flex-row items-start sm:items-center gap-2">
+          <div className="form-row flex-1 items-start">
             <Input
               value={editName}
               onChange={(e) => onEditNameChange(e.target.value)}
@@ -54,7 +54,7 @@ export function MuscleGroupAccordionView({
               disabled={isSaving}
               onClick={(e) => e.stopPropagation()}
             />
-            <div className="flex gap-1">
+            <div className="action-group">
               <Button
                 size="icon" variant="ghost"
                 onClick={(e) => { e.stopPropagation(); onSave() }}
@@ -77,7 +77,7 @@ export function MuscleGroupAccordionView({
             <span className="truncate text-muted-foreground hidden sm:inline">
               · {muscleGroup.vn_name}
             </span>
-            <div className="ml-auto flex gap-1 opacity-0 group-hover/trigger:opacity-100 transition-opacity">
+            <div className="ml-auto action-group sm:opacity-0 sm:group-hover/trigger:opacity-100 transition-opacity">
               <Button
                 size="icon" variant="ghost"
                 onClick={(e) => { e.stopPropagation(); onEditStart() }}
@@ -105,7 +105,7 @@ export function MuscleGroupAccordionView({
             <ExerciseRow key={ex.id} exercise={ex} />
           ))}
           {isAddingExercise && (
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 border-t">
+            <div className="form-row items-start border-t">
               <Input
                 placeholder="Exercise name (English)"
                 className="flex-1"
@@ -121,7 +121,7 @@ export function MuscleGroupAccordionView({
                 onChange={(e) => onNewExerciseVnNameChange(e.target.value)}
                 disabled={isCreatingExercise}
               />
-              <div className="flex gap-1">
+              <div className="action-group">
                 <Button size="icon" variant="ghost" onClick={onCreateExercise} disabled={isCreatingExercise}>
                   <Check />
                 </Button>

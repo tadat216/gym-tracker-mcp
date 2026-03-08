@@ -36,7 +36,7 @@ export function ExerciseLibraryView({
       </Accordion>
 
       {isAdding ? (
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 border rounded-lg">
+        <div className="form-row items-start border rounded-lg">
           <Input
             placeholder="Muscle group name (English)"
             className="flex-1"
@@ -52,7 +52,7 @@ export function ExerciseLibraryView({
             onChange={(e) => onNewVnNameChange(e.target.value)}
             disabled={isCreating}
           />
-          <div className="flex gap-1">
+          <div className="action-group">
             <Button size="icon" variant="ghost" onClick={onCreate} disabled={isCreating}>
               <Check />
             </Button>

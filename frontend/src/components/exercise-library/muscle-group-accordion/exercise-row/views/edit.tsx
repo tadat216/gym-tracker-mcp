@@ -13,7 +13,7 @@ export function ExerciseRowEditView({
   onCancel,
 }: ExerciseRowEditViewProps) {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+    <div className="form-row">
       <Input
         value={name}
         onChange={(e) => onNameChange(e.target.value)}
@@ -29,7 +29,7 @@ export function ExerciseRowEditView({
         className="flex-1"
         disabled={isSaving}
       />
-      <div className="flex gap-1">
+      <div className="action-group">
         <Button size="icon" variant="ghost" onClick={onSave} disabled={isSaving}>
           <Check />
         </Button>
