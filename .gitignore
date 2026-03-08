@@ -10,5 +10,9 @@ wheels/
 # Virtual environments
 .venv
 
+# Environment secrets
+backend/.env
+frontend/.env
+
 # Database
 *.db
