@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useMemo, useState } from "react";
 
-const TOKEN_KEY = "gym_tracker_token";
+export const TOKEN_KEY = "gym_tracker_token";
 
 interface AuthContextValue {
   token: string | null;

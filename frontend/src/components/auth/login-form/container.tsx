@@ -5,11 +5,11 @@ import { LoginFormView } from "./views";
 
 export function LoginFormContainer() {
   const { isAuthenticated } = useAuth();
+  const props = useLoginForm();
 
   if (isAuthenticated) {
     return <Navigate to="/" replace />;
   }
 
-  const props = useLoginForm();
   return <LoginFormView {...props} />;
 }

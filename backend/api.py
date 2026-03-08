@@ -47,11 +47,6 @@ app.add_middleware(
 # These must be FastAPI routes (not MCP routes) so they're served on the main app.
 # The MCP OAuth provider redirects to /auth/login; these routes handle the form.
 
-def _get_oauth_provider():
-    """Get the OAuth provider from the FastMCP instance."""
-    return mcp.auth  # type: ignore[attr-defined]
-
-
 @app.get("/auth/login", response_class=HTMLResponse, include_in_schema=False)
 async def login_page(request_id: str):
     """Serve the OAuth login form."""
@@ -65,7 +60,7 @@ async def login_submit(
     password: str = Form(...),
 ):
     """Handle login form POST. Validates credentials and completes OAuth flow."""
-    provider = _get_oauth_provider()
+    provider = mcp.auth  # type: ignore[attr-defined]
 
     if username != AUTH_USERNAME or password != AUTH_PASSWORD:
         return HTMLResponse(

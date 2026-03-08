@@ -15,7 +15,6 @@ from mcp.server.auth.provider import (
     AccessToken,
     AuthorizationCode,
     AuthorizationParams,
-    AuthorizeError,
     RefreshToken,
     TokenError,
     construct_redirect_uri,
@@ -128,11 +127,6 @@ class GymTrackerOAuthProvider(OAuthProvider):
         request_id = secrets.token_urlsafe(32)
         self._pending_requests[request_id] = (client, params)
         return f"/auth/login?request_id={request_id}"
-
-    def get_pending_request(
-        self, request_id: str
-    ) -> tuple[OAuthClientInformationFull, AuthorizationParams] | None:
-        return self._pending_requests.get(request_id)
 
     def complete_authorization(
         self, request_id: str, username: str
@@ -260,10 +254,11 @@ _bearer_scheme = HTTPBearer(auto_error=False)
 
 def create_jwt(username: str) -> str:
     """Issue a JWT for REST API access (24h expiry)."""
+    now = int(time.time())
     payload = {
         "sub": username,
-        "exp": int(time.time()) + REST_TOKEN_EXPIRY,
-        "iat": int(time.time()),
+        "exp": now + REST_TOKEN_EXPIRY,
+        "iat": now,
     }
     return jwt.encode(payload, JWT_SECRET, algorithm="HS256")
 
