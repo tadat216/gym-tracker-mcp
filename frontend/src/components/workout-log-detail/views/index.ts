@@ -1,0 +1,1 @@
+export { WorkoutLogDetailView } from './main'
