@@ -16,3 +16,6 @@ frontend/.env
 
 # Database
 *.db
+
+.DS_STORE
+.agent/
