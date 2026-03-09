@@ -157,16 +157,14 @@
   /* Workout day indicator dot in calendar */
   .day-has-workout {
     position: relative;
+    overflow: visible;
   }
   .day-has-workout::after {
-    content: '';
+    content: '🔥';
     position: absolute;
-    bottom: 2px;
-    left: 50%;
+    bottom: -6px;
+    left: 45%;
     transform: translateX(-50%);
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    background-color: #22c55e;
+    font-size: 10px;
   }
 }
