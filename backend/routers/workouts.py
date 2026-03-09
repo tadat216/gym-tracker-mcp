@@ -11,8 +11,13 @@ from utils import today_vn
 router = APIRouter()
 
 
+from typing import Annotated
+
+from pydantic import BaseModel, Field
+
+
 class WorkoutCreate(BaseModel):
-    date: str | None = None
+    date: Annotated[str | None, Field(pattern=r"^\d{4}-\d{2}-\d{2}$")] = None
 
 
 @router.get("")
@@ -36,12 +41,13 @@ def get_calendar(month: int, year: int | None = None, session: Session = Depends
     cal_year = year or int(today_vn()[:4])
     weeks = calendar.monthcalendar(cal_year, month)
     workouts = WorkoutService(session).list_in_month(cal_year, month)
+    we_service = WorkoutExerciseService(session)
     return {
         "year": cal_year,
         "month": month,
         "month_name": calendar.month_name[month],
         "weeks": weeks,
-        "workout_dates": [w.date for w in workouts],
+        "workout_dates": [w.date for w in workouts if we_service.list(w.id)],
     }
 
 
