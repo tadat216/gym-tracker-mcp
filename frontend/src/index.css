@@ -153,4 +153,20 @@
   .skeleton-item {
     @apply h-12 rounded-lg bg-muted animate-pulse;
   }
+
+  /* Workout day indicator dot in calendar */
+  .day-has-workout {
+    position: relative;
+  }
+  .day-has-workout::after {
+    content: '';
+    position: absolute;
+    bottom: 2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background-color: #22c55e;
+  }
 }

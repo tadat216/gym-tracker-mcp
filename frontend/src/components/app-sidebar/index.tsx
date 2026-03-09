@@ -1,4 +1,5 @@
-import { Dumbbell } from "lucide-react"
+import { CalendarDays, Dumbbell } from "lucide-react"
+import { NavLink } from "react-router-dom"
 import {
   Sidebar,
   SidebarContent,
@@ -23,10 +24,24 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton isActive>
-                  <Dumbbell />
-                  <span>Exercise Library</span>
-                </SidebarMenuButton>
+                <NavLink to="/workout-log">
+                  {({ isActive }) => (
+                    <SidebarMenuButton isActive={isActive}>
+                      <CalendarDays />
+                      <span>Workout Log</span>
+                    </SidebarMenuButton>
+                  )}
+                </NavLink>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <NavLink to="/exercise-library">
+                  {({ isActive }) => (
+                    <SidebarMenuButton isActive={isActive}>
+                      <Dumbbell />
+                      <span>Exercise Library</span>
+                    </SidebarMenuButton>
+                  )}
+                </NavLink>
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
