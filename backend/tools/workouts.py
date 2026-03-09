@@ -24,13 +24,15 @@ def register(mcp: FastMCP) -> None:
 
         with Session(engine) as session:
             workouts = WorkoutService(session).list_in_month(cal_year, month)
+            we_service = WorkoutExerciseService(session)
+            workout_dates = [w.date for w in workouts if we_service.list(w.id)]
 
         return {
             "year": cal_year,
             "month": month,
             "month_name": cal_module.month_name[month],
             "weeks": weeks,
-            "workout_dates": [w.date for w in workouts],
+            "workout_dates": workout_dates,
         }
 
     @mcp.tool()
