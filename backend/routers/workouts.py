@@ -58,6 +58,18 @@ def create_workout(body: WorkoutCreate, session: Session = Depends(get_session))
     return {"id": workout.id, "date": workout.date}
 
 
+@router.get("/muscle-group/{muscle_group_id}")
+def get_muscle_group_volume(
+    muscle_group_id: int,
+    start_date: str,
+    end_date: str,
+    session: Session = Depends(get_session),
+):
+    return WorkoutService(session).list_with_muscle_group_volume(
+        muscle_group_id, start_date, end_date
+    )
+
+
 @router.get("/{workout_id}")
 def get_workout_detail(workout_id: int, session: Session = Depends(get_session)):
     workout = WorkoutService(session).get(workout_id)

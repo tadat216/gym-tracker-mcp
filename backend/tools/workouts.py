@@ -81,6 +81,21 @@ def register(mcp: FastMCP) -> None:
         }
 
     @mcp.tool()
+    def get_muscle_group_workouts(
+        muscle_group_id: int,
+        start_date: str,
+        end_date: str,
+    ) -> list[dict]:
+        """Get workouts for a specific muscle group within a date range, with training volume
+        per workout. Volume = Σ (reps × weight) for all sets of exercises targeting that muscle
+        group. Dates are ISO 8601 (YYYY-MM-DD). Returns only workouts where the muscle group
+        was actually trained."""
+        with Session(engine) as session:
+            return WorkoutService(session).list_with_muscle_group_volume(
+                muscle_group_id, start_date, end_date
+            )
+
+    @mcp.tool()
     def create_workout(workout_date: str | None = None) -> dict:
         """Create a workout for a given date (ISO 8601, defaults to today).
         Returns existing workout if one already exists for that date (one per day)."""
