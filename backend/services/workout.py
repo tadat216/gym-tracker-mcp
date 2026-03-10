@@ -2,9 +2,10 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 
+from sqlalchemy import func
 from sqlmodel import Session, select
 
-from database import Workout
+from database import Exercise, Workout, WorkoutExercise, WorkoutExerciseDetail
 from utils import VN_TZ
 
 
@@ -74,3 +75,45 @@ class WorkoutService:
         self.session.delete(workout)
         self.session.commit()
         return True
+
+    def list_with_muscle_group_volume(
+        self, muscle_group_id: int, start_date: str, end_date: str
+    ) -> list[dict]:
+        rows = self.session.exec(
+            select(
+                Workout.id,
+                Workout.date,
+                Exercise.id,
+                Exercise.name,
+                Exercise.vn_name,
+                func.sum(WorkoutExerciseDetail.rep_count * WorkoutExerciseDetail.weight).label("volume"),
+            )
+            .join(WorkoutExercise, WorkoutExercise.workout_id == Workout.id)  # type: ignore[arg-type]
+            .join(Exercise, Exercise.id == WorkoutExercise.exercise_id)  # type: ignore[arg-type]
+            .join(WorkoutExerciseDetail, WorkoutExerciseDetail.workout_exercise_id == WorkoutExercise.id)  # type: ignore[arg-type]
+            .where(Exercise.muscle_group_id == muscle_group_id)  # type: ignore[arg-type]
+            .where(Workout.date >= start_date)  # type: ignore[arg-type]
+            .where(Workout.date <= end_date)  # type: ignore[arg-type]
+            .group_by(Workout.id, Workout.date, Exercise.id, Exercise.name, Exercise.vn_name)
+            .order_by(Workout.date)  # type: ignore[arg-type]
+        ).all()
+
+        workouts: dict[int, dict] = {}
+        for workout_id, date, exercise_id, name, vn_name, volume in rows:
+            if workout_id not in workouts:
+                workouts[workout_id] = {
+                    "workout_id": workout_id,
+                    "date": date,
+                    "total_volume": 0.0,
+                    "exercises": [],
+                }
+            v = float(volume or 0.0)
+            workouts[workout_id]["exercises"].append({
+                "exercise_id": exercise_id,
+                "name": name,
+                "vn_name": vn_name,
+                "volume": v,
+            })
+            workouts[workout_id]["total_volume"] += v
+
+        return list(workouts.values())
