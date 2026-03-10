@@ -59,6 +59,13 @@ export function ExerciseItem({
             onEdit={onEditSet}
           />
         ))}
+        <div className="mt-3 flex flex-col border-t pt-2">
+          <span className="text-xs font-medium uppercase tracking-widest text-gray-400">Volume</span>
+          <span className="text-lg font-bold text-gray-900">
+            {exercise.sets.reduce((total, set) => total + set.rep_count * set.weight, 0)}
+            <span className="ml-1 text-sm font-normal text-gray-500">kg</span>
+          </span>
+        </div>
       </div>
 
       {isAddingSet && (

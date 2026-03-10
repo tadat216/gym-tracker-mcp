@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import type { SetData } from '../types'
+import { Pencil, Trash } from 'lucide-react'
 
 interface SetRowProps {
   set: SetData
@@ -34,25 +35,25 @@ export function SetRow({ set, index, onDelete, onEdit }: SetRowProps) {
 
   if (isEditing) {
     return (
-      <div className="flex items-center gap-2 py-1">
+      <div className="flex items-end gap-2 py-1">
         <span className="text-muted-foreground text-sm w-12">Set {index + 1}</span>
-        <div className="flex flex-col gap-0.5 flex-1">
-          <label className="text-xs text-muted-foreground">Weight (kg)</label>
+        <div className="flex items-end gap-0.5 flex-1">
           <Input
             type="number"
             value={editWeight}
             onChange={(e) => setEditWeight(e.target.value)}
             className="h-7 text-sm"
           />
+          <p className="text-sm text-muted-foreground">kg</p>
         </div>
-        <div className="flex flex-col gap-0.5 flex-1">
-          <label className="text-xs text-muted-foreground">Reps</label>
+        <div className="flex items-end gap-0.5 flex-1">
           <Input
             type="number"
             value={editRepCount}
             onChange={(e) => setEditRepCount(e.target.value)}
             className="h-7 text-sm"
           />
+          <p className="text-sm text-muted-foreground">reps</p>
         </div>
         <div className="flex gap-1 items-end pb-0.5">
           <Button size="sm" onClick={handleSave} disabled={isSaving} className="h-7 text-xs">
@@ -67,26 +68,28 @@ export function SetRow({ set, index, onDelete, onEdit }: SetRowProps) {
   }
 
   return (
-    <div className="flex items-center gap-4 py-1 text-sm">
-      <span className="text-muted-foreground w-12">Set {index + 1}</span>
-      <span className="w-16">{set.weight}kg</span>
-      <span className="w-16">{set.rep_count} reps</span>
-      <button
+    <div className="grid grid-cols-8 items-center gap-4 py-1 text-sm">
+      <span className="col-span-2  text-muted-foreground w-12">Set {index + 1}</span>
+      <span className="col-span-2 w-16">{set.weight}kg</span>
+      <span className="col-span-2 w-16">{set.rep_count} reps</span>
+      <Button
         type="button"
         onClick={() => setIsEditing(true)}
-        className="text-muted-foreground hover:text-foreground min-w-8 min-h-8 flex items-center justify-center text-xs"
+        className="col-span-1"
+        variant="ghost"
         aria-label="Edit set"
       >
-        ✎
-      </button>
-      <button
+        <Pencil className="w-4 h-4" />    
+      </Button>
+      <Button
+        className="col-span-1"
         type="button"
+        variant="ghost"
         onClick={onDelete}
-        className="text-destructive hover:text-destructive/80 min-w-8 min-h-8 flex items-center justify-center"
         aria-label="Delete set"
       >
-        ×
-      </button>
+        <Trash className="w-4 h-4" />
+      </Button>
     </div>
   )
 }
