@@ -5,6 +5,7 @@ export type { MuscleGroup, Exercise }
 export interface MuscleGroupAccordionViewProps {
   muscleGroup: MuscleGroup
   exercises: Exercise[]
+  allMuscleGroups: MuscleGroup[]
   // Header edit state
   isEditing: boolean
   editName: string

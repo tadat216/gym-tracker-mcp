@@ -7,12 +7,14 @@ import type { MuscleGroup, Exercise } from "../types"
 interface MuscleGroupAccordionProps {
   muscleGroup: MuscleGroup
   exercises: Exercise[]
+  allMuscleGroups: MuscleGroup[]
   onDelete: (id: number) => void
 }
 
 export function MuscleGroupAccordion({
   muscleGroup,
   exercises,
+  allMuscleGroups,
   onDelete,
 }: MuscleGroupAccordionProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
@@ -23,6 +25,7 @@ export function MuscleGroupAccordion({
       <MuscleGroupAccordionView
         muscleGroup={muscleGroup}
         exercises={exercises}
+        allMuscleGroups={allMuscleGroups}
         isEditing={hook.isEditing}
         editName={hook.editName}
         editVnName={hook.editVnName}

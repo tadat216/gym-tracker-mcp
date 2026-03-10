@@ -30,6 +30,7 @@ export function ExerciseLibraryView({
             key={group.id}
             muscleGroup={group}
             exercises={exercisesForGroup(group.id)}
+            allMuscleGroups={muscleGroups}
             onDelete={onDelete}
           />
         ))}

@@ -30,6 +30,7 @@ export function WorkoutCalendarView({
         modifiers={{ hasWorkout: workoutDates }}
         modifiersClassNames={{ hasWorkout: 'day-has-workout' }}
         className="w-full md:w-auto"
+        weekStartsOn={1}
       />
     </div>
   )

@@ -12,6 +12,7 @@ import type { MuscleGroupAccordionViewProps } from "../types"
 export function MuscleGroupAccordionView({
   muscleGroup,
   exercises,
+  allMuscleGroups,
   isEditing,
   editName,
   editVnName,
@@ -102,7 +103,7 @@ export function MuscleGroupAccordionView({
             <p className="text-muted-foreground text-sm">No exercises yet.</p>
           )}
           {exercises.map((ex) => (
-            <ExerciseRow key={ex.id} exercise={ex} />
+            <ExerciseRow key={ex.id} exercise={ex} allMuscleGroups={allMuscleGroups} />
           ))}
           {isAddingExercise && (
             <div className="form-row items-start border rounded-md px-3 py-2">
