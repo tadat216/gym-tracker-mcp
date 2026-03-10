@@ -29,6 +29,7 @@ export function WorkoutCalendarView({
         onSelect={onDateSelect}
         modifiers={{ hasWorkout: workoutDates }}
         modifiersClassNames={{ hasWorkout: 'day-has-workout' }}
+        className="w-full md:w-auto"
       />
     </div>
   )

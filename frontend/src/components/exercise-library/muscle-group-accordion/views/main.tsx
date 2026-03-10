@@ -33,7 +33,7 @@ export function MuscleGroupAccordionView({
   onCreateExercise,
 }: MuscleGroupAccordionViewProps) {
   return (
-    <AccordionItem value={String(muscleGroup.id)} className="border rounded-lg">
+    <AccordionItem value={String(muscleGroup.id)} className="border rounded-lg px-2">
       <AccordionTrigger className="group/trigger hover:no-underline">
         {isEditing ? (
           <div className="form-row flex-1 items-start">
@@ -73,9 +73,9 @@ export function MuscleGroupAccordionView({
           </div>
         ) : (
           <div className="flex flex-1 items-center gap-2 min-w-0">
-            <span className="truncate font-medium">{muscleGroup.name}</span>
-            <span className="truncate text-muted-foreground hidden sm:inline">
-              · {muscleGroup.vn_name}
+            <h2 className="truncate text-lg font-bold">{muscleGroup.name}</h2>
+            <span className="truncate text-muted-foreground sm:inline">
+              {muscleGroup.vn_name}
             </span>
             <div className="ml-auto action-group sm:opacity-0 sm:group-hover/trigger:opacity-100 transition-opacity">
               <Button
