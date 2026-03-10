@@ -97,15 +97,15 @@ export function MuscleGroupAccordionView({
       </AccordionTrigger>
 
       <AccordionContent>
-        <div>
+        <div className="flex flex-col gap-1.5 pt-1">
           {exercises.length === 0 && !isAddingExercise && (
-            <p className="text-muted-foreground">No exercises yet.</p>
+            <p className="text-muted-foreground text-sm">No exercises yet.</p>
           )}
           {exercises.map((ex) => (
             <ExerciseRow key={ex.id} exercise={ex} />
           ))}
           {isAddingExercise && (
-            <div className="form-row items-start border-t">
+            <div className="form-row items-start border rounded-md px-3 py-2">
               <Input
                 placeholder="Exercise name (English)"
                 className="flex-1"
