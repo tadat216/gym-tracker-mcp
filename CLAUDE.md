@@ -31,6 +31,11 @@ cd backend && uv run seed.py
 
 # Add a dependency
 cd backend && uv add <package>
+
+# Database migrations (Alembic — run from backend/ directory)
+cd backend && uv run alembic upgrade head          # apply all pending migrations
+cd backend && uv run alembic revision --autogenerate -m "description"  # create new migration
+cd backend && uv run alembic downgrade -1          # roll back one migration
 ```
 
 Python version: 3.12 (enforced via `backend/.python-version`). No tests or linters are configured.
@@ -81,12 +86,13 @@ Environment variables:
 ```
 gym-tracker-mcp/
 ├── backend/
-│   ├── api.py            ← combined entry point: FastAPI + FastMCP on one port
+│   ├── api.py            ← combined entry point: creates FastMCP + FastAPI on one port, registers all tools
 │   ├── main.py           ← MCP-only entry point (no REST)
-│   ├── mcp_instance.py   ← creates the shared FastMCP instance with OAuth, registers all tools
 │   ├── auth.py           ← GymTrackerOAuthProvider (MCP OAuth 2.1) + JWT helpers (REST)
 │   ├── deps.py           ← FastAPI get_session() dependency
-│   ├── database.py       ← SQLModel models, SQLite engine, init_db()
+│   ├── database.py       ← SQLModel models + SQLite engine
+│   ├── alembic/          ← Alembic migration environment (env.py imports SQLModel metadata)
+│   ├── alembic.ini       ← Alembic config (points to sqlite:///./gym_tracker.db)
 │   ├── utils.py          ← Vietnam timezone (VN_TZ, today_vn())
 │   ├── seed.py           ← idempotent DB seeder (8 muscle groups, ~40 exercises)
 │   ├── .env              ← secrets (gitignored); copy from .env.example
@@ -120,14 +126,14 @@ api.py  (FastAPI app + FastMCP mounted at /mcp)
             └── database.py  (SQLModel models + SQLite engine)
 ```
 
-`main.py` bypasses the REST layer entirely — it imports `mcp` from `mcp_instance.py` and runs it standalone.
+`main.py` bypasses the REST layer entirely — it creates its own `FastMCP` instance and runs it standalone.
 
 ### Authentication Architecture
 
 Two independent auth systems share the same `AUTH_USERNAME`/`AUTH_PASSWORD` from `.env`:
 
 **MCP OAuth 2.1** (`GymTrackerOAuthProvider` in `auth.py`):
-- `mcp_instance.py` passes the provider to `FastMCP(..., auth=...)`
+- `api.py` passes the provider to `FastMCP(..., auth=...)`
 - FastMCP serves `/.well-known/oauth-authorization-server`, `/mcp/authorize`, `/mcp/token`
 - `api.py` serves the login form at `GET/POST /auth/login` (FastAPI routes, not MCP routes)
 - Tokens are stored in memory — cleared on server restart, requiring re-auth in claude.ai
@@ -170,7 +176,7 @@ nginx configuration includes SSE streaming support for MCP (`proxy_buffering off
 
 ### tools/ Pattern
 
-Each module exposes a `register(mcp: FastMCP)` function that defines and decorates `@mcp.tool()` functions as inner functions. `mcp_instance.py` calls all five in sequence. Tools open their own `with Session(engine) as session:` block per call — they do not use `deps.get_session`.
+Each module exposes a `register(mcp: FastMCP)` function that defines and decorates `@mcp.tool()` functions as inner functions. `api.py` calls all five `register()` functions in sequence. Tools open their own `with Session(engine) as session:` block per call — they do not use `deps.get_session`.
 
 ### routers/ Pattern
 
@@ -206,7 +212,7 @@ muscle_groups → exercises → workout_exercises → workout_exercises_details
 - `workout_exercises(id, workout_id, exercise_id)` — join table; no update method
 - `workout_exercises_details(id, workout_exercise_id, rep_count, weight)` — one row per set; `weight` in kg
 
-`init_db()` calls `SQLModel.metadata.create_all(engine)` and must be called before the first request.
+Schema is managed by Alembic migrations. Run `uv run alembic upgrade head` before first use (or after pulling schema changes). The Alembic `env.py` uses `render_as_batch=True` to support SQLite ALTER TABLE operations.
 
 ### Key Design Points
 
