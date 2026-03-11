@@ -11,7 +11,6 @@ from fastmcp import FastMCP
 from pydantic import BaseModel
 
 from auth import AUTH_PASSWORD, AUTH_USERNAME, create_jwt, require_auth
-from database import init_db
 from routers import exercises, muscle_groups, sets, workout_exercises, workouts
 from tools import (
     exercises as tools_exercises,
@@ -20,8 +19,6 @@ from tools import (
     workout_exercises as tools_workout_exercises,
     workouts as tools_workouts,
 )
-
-init_db()
 
 mcp = FastMCP("Gym Tracker")
 tools_muscle_groups.register(mcp)

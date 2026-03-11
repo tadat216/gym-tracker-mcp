@@ -46,7 +46,3 @@ class WorkoutExerciseDetail(SQLModel, table=True):
     workout_exercise_id: int = Field(foreign_key="workout_exercises.id")
     rep_count: int
     weight: float  # kg
-
-
-def init_db() -> None:
-    SQLModel.metadata.create_all(engine)
