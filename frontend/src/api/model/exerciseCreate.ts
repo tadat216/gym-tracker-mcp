@@ -4,9 +4,11 @@
  * Gym Tracker API
  * OpenAPI spec version: 1.0.0
  */
+import type { TrackingType } from './trackingType';
 
 export interface ExerciseCreate {
   name: string;
   vn_name: string;
   muscle_group_id: number;
+  tracking_type?: TrackingType;
 }

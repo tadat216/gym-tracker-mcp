@@ -1,3 +1,5 @@
+import type { TrackingType } from "@/api/model/trackingType"
+
 // Domain types (cast from API unknown responses)
 export interface MuscleGroup {
   id: number
@@ -10,6 +12,7 @@ export interface Exercise {
   name: string
   vn_name: string
   muscle_group_id: number
+  tracking_type: TrackingType
 }
 
 // View prop types

@@ -26,11 +26,13 @@ export function WorkoutLogDetailContainer() {
       selectedWorkoutExerciseId={hook.selectedWorkoutExerciseId}
       repCount={hook.repCount}
       weight={hook.weight}
+      durationSec={hook.durationSec}
       isSubmitting={hook.isSubmitting}
       onAddExercise={() => hook.setShowAddExercise(true)}
       onSelectExercise={hook.setSelectedExercise}
       onRepCountChange={hook.setRepCount}
       onWeightChange={hook.setWeight}
+      onDurationSecChange={hook.onDurationSecChange}
       onSubmitSet={hook.handleSubmitSet}
       onCancelAdd={hook.handleCancelAdd}
       onAddSet={hook.handleAddSet}

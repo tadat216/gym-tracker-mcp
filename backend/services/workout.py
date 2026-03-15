@@ -86,7 +86,7 @@ class WorkoutService:
                 Exercise.id,
                 Exercise.name,
                 Exercise.vn_name,
-                func.sum(WorkoutExerciseDetail.rep_count * WorkoutExerciseDetail.weight).label("volume"),
+                func.sum(func.coalesce(WorkoutExerciseDetail.rep_count, 0) * func.coalesce(WorkoutExerciseDetail.weight, 0)).label("volume"),
             )
             .join(WorkoutExercise, WorkoutExercise.workout_id == Workout.id)  # type: ignore[arg-type]
             .join(Exercise, Exercise.id == WorkoutExercise.exercise_id)  # type: ignore[arg-type]

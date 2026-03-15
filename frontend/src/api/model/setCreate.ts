@@ -7,6 +7,7 @@
 
 export interface SetCreate {
   workout_exercise_id: number;
-  rep_count: number;
-  weight: number;
+  rep_count?: number | null;
+  weight?: number | null;
+  duration_sec?: number | null;
 }

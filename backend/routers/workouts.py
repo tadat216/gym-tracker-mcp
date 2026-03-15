@@ -86,7 +86,8 @@ def get_workout_detail(workout_id: int, session: Session = Depends(get_session))
             "exercise_id": we.exercise_id,
             "name": exercise.name if exercise else None,
             "vn_name": exercise.vn_name if exercise else None,
-            "sets": [{"id": s.id, "rep_count": s.rep_count, "weight": s.weight} for s in sets],
+            "tracking_type": exercise.tracking_type if exercise else None,
+            "sets": [{"id": s.id, "rep_count": s.rep_count, "weight": s.weight, "duration_sec": s.duration_sec} for s in sets],
         })
 
     return {"id": workout.id, "date": workout.date, "exercises": result_exercises}

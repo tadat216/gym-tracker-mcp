@@ -22,10 +22,12 @@ export interface MuscleGroupAccordionViewProps {
   isAddingExercise: boolean
   newExerciseName: string
   newExerciseVnName: string
+  newExerciseTrackingType: string
   isCreatingExercise: boolean
   onAddExercise: () => void
   onCancelAddExercise: () => void
   onNewExerciseNameChange: (v: string) => void
   onNewExerciseVnNameChange: (v: string) => void
+  onNewExerciseTrackingTypeChange: (v: string) => void
   onCreateExercise: () => void
 }

@@ -16,10 +16,12 @@ export function ExerciseRowEditView({
   vnName,
   muscleGroupName,
   allMuscleGroups,
+  trackingType,
   isSaving,
   onNameChange,
   onVnNameChange,
   onMuscleGroupChange,
+  onTrackingTypeChange,
   onSave,
   onCancel,
 }: ExerciseRowEditViewProps) {
@@ -55,6 +57,25 @@ export function ExerciseRowEditView({
               <SelectItem key={g.id} value={g.name}>{g.name}</SelectItem>
             ))}
            </SelectGroup>
+        </SelectContent>
+      </Select>
+      <Select
+        value={trackingType}
+        onValueChange={(value) => value !== null && onTrackingTypeChange(value)}
+        disabled={isSaving}
+        aria-label="Tracking type"
+      >
+        <SelectTrigger className="w-full">
+          <SelectValue placeholder="Select tracking type">
+            {{ reps_weight: 'Weighted', bodyweight: 'Bodyweight', duration: 'Duration' }[trackingType] ?? 'Select tracking type'}
+          </SelectValue>
+        </SelectTrigger>
+        <SelectContent>
+          <SelectGroup>
+            <SelectItem value="reps_weight">Weighted</SelectItem>
+            <SelectItem value="bodyweight">Bodyweight</SelectItem>
+            <SelectItem value="duration">Duration</SelectItem>
+          </SelectGroup>
         </SelectContent>
       </Select>
       <div className="action-group">

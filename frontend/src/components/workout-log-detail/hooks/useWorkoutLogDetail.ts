@@ -24,6 +24,7 @@ export function useWorkoutLogDetail(date: string) {
   const [selectedWorkoutExerciseId, setSelectedWorkoutExerciseId] = useState<number | null>(null)
   const [repCount, setRepCount] = useState('')
   const [weight, setWeight] = useState('')
+  const [durationSec, setDurationSec] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const queryClient = useQueryClient()
@@ -86,13 +87,20 @@ export function useWorkoutLogDetail(date: string) {
         workoutExerciseId = (weResult as { id: number }).id
       }
 
-      await logSetMutation.mutateAsync({
-        data: {
-          workout_exercise_id: workoutExerciseId,
-          rep_count: Number(repCount),
-          weight: Number(weight),
-        },
-      })
+      const trackingType = selectedExercise.tracking_type
+      let setPayload: { workout_exercise_id: number; rep_count?: number; weight?: number; duration_sec?: number }
+      if (trackingType === 'reps_weight') {
+        setPayload = { workout_exercise_id: workoutExerciseId, rep_count: Number(repCount), weight: Number(weight) }
+      } else if (trackingType === 'bodyweight') {
+        setPayload = { workout_exercise_id: workoutExerciseId, rep_count: Number(repCount) }
+        if (weight && Number(weight) > 0) {
+          setPayload.weight = Number(weight)
+        }
+      } else { // duration
+        setPayload = { workout_exercise_id: workoutExerciseId, duration_sec: Number(durationSec) }
+      }
+
+      await logSetMutation.mutateAsync({ data: setPayload })
 
       await queryClient.invalidateQueries({
         queryKey: getGetWorkoutDetailApiWorkoutsWorkoutIdGetQueryKey(currentWorkoutId!),
@@ -108,6 +116,7 @@ export function useWorkoutLogDetail(date: string) {
       setSelectedWorkoutExerciseId(null)
       setRepCount('')
       setWeight('')
+      setDurationSec('')
       setShowAddExercise(false)
     } finally {
       setIsSubmitting(false)
@@ -126,8 +135,8 @@ export function useWorkoutLogDetail(date: string) {
     }
   }
 
-  async function handleUpdateSet(setId: number, repCount: number, weight: number) {
-    await updateSetMutation.mutateAsync({ setId, data: { rep_count: repCount, weight } })
+  async function handleUpdateSet(setId: number, payload: { rep_count?: number; weight?: number; duration_sec?: number }) {
+    await updateSetMutation.mutateAsync({ setId, data: payload })
     if (resolvedWorkoutId !== null) {
       await queryClient.invalidateQueries({
         queryKey: getGetWorkoutDetailApiWorkoutsWorkoutIdGetQueryKey(resolvedWorkoutId),
@@ -164,6 +173,8 @@ export function useWorkoutLogDetail(date: string) {
     setRepCount,
     weight,
     setWeight,
+    durationSec,
+    onDurationSecChange: (value: string) => setDurationSec(value),
     handleSubmitSet,
     handleDeleteSet,
     handleUpdateSet,

@@ -22,16 +22,18 @@ interface WorkoutLogDetailViewProps {
   selectedWorkoutExerciseId: number | null
   repCount: string
   weight: string
+  durationSec: string
   isSubmitting: boolean
   onAddExercise: () => void
   onSelectExercise: (exercise: Exercise) => void
   onRepCountChange: (v: string) => void
   onWeightChange: (v: string) => void
+  onDurationSecChange: (v: string) => void
   onSubmitSet: () => void
   onCancelAdd: () => void
   onAddSet: (exerciseId: number, workoutExerciseId: number) => void
   onDeleteSet: (setId: number, workoutExerciseId: number, isLastSet: boolean) => void
-  onEditSet: (setId: number, repCount: number, weight: number) => Promise<void>
+  onEditSet: (setId: number, payload: { rep_count?: number; weight?: number; duration_sec?: number }) => Promise<void>
   onBack: () => void
 }
 
@@ -46,11 +48,13 @@ export function WorkoutLogDetailView({
   selectedWorkoutExerciseId,
   repCount,
   weight,
+  durationSec,
   isSubmitting,
   onAddExercise,
   onSelectExercise,
   onRepCountChange,
   onWeightChange,
+  onDurationSecChange,
   onSubmitSet,
   onCancelAdd,
   onAddSet,
@@ -84,14 +88,17 @@ export function WorkoutLogDetailView({
                 key={ex.workout_exercise_id}
                 exercise={ex}
                 isAddingSet={isAddingToExisting && selectedExercise?.id === ex.exercise_id}
+                addingTrackingType={isAddingToExisting && selectedExercise?.id === ex.exercise_id ? selectedExercise?.tracking_type : undefined}
                 repCount={repCount}
                 weight={weight}
+                durationSec={durationSec}
                 isSubmitting={isSubmitting}
                 onAddSet={onAddSet}
                 onDeleteSet={onDeleteSet}
                 onEditSet={onEditSet}
                 onRepCountChange={onRepCountChange}
                 onWeightChange={onWeightChange}
+                onDurationSecChange={onDurationSecChange}
                 onSubmitSet={onSubmitSet}
                 onCancelAdd={onCancelAdd}
               />
@@ -121,10 +128,12 @@ export function WorkoutLogDetailView({
               selectedExercise={selectedExercise}
               repCount={repCount}
               weight={weight}
+              durationSec={durationSec}
               isSubmitting={isSubmitting}
               onSelectExercise={onSelectExercise}
               onRepCountChange={onRepCountChange}
               onWeightChange={onWeightChange}
+              onDurationSecChange={onDurationSecChange}
               onSubmit={onSubmitSet}
               onCancel={onCancelAdd}
             />
