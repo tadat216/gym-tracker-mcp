@@ -15,11 +15,13 @@ export function ExerciseRow({ exercise, allMuscleGroups }: ExerciseRowProps) {
     name,
     vnName,
     muscleGroupId,
+    trackingType,
     setIsEditing,
     setShowDeleteConfirm,
     onNameChange,
     onVnNameChange,
     onMuscleGroupChange,
+    onTrackingTypeChange,
     handleSave,
     handleCancel,
     handleDelete,
@@ -42,10 +44,12 @@ export function ExerciseRow({ exercise, allMuscleGroups }: ExerciseRowProps) {
           vnName={vnName}
           muscleGroupName={muscleGroupName}
           allMuscleGroups={allMuscleGroups}
+          trackingType={trackingType}
           isSaving={isSaving}
           onNameChange={onNameChange}
           onVnNameChange={onVnNameChange}
           onMuscleGroupChange={handleMuscleGroupChangeByName}
+          onTrackingTypeChange={onTrackingTypeChange}
           onSave={handleSave}
           onCancel={handleCancel}
         />

@@ -8,6 +8,7 @@ import {
   useCreateExerciseApiExercisesPost,
   getListExercisesApiExercisesGetQueryKey,
 } from "@/api/exercises/exercises"
+import type { TrackingType } from "@/api/model/trackingType"
 import type { MuscleGroup } from "../types"
 
 export function useMuscleGroupAccordion(muscleGroup: MuscleGroup) {
@@ -20,6 +21,7 @@ export function useMuscleGroupAccordion(muscleGroup: MuscleGroup) {
   const [isAddingExercise, setIsAddingExercise] = useState(false)
   const [newExerciseName, setNewExerciseName] = useState("")
   const [newExerciseVnName, setNewExerciseVnName] = useState("")
+  const [newExerciseTrackingType, setNewExerciseTrackingType] = useState("reps_weight")
 
   const invalidateGroups = () =>
     queryClient.invalidateQueries({ queryKey: getListMuscleGroupsApiMuscleGroupsGetQueryKey() })
@@ -42,6 +44,7 @@ export function useMuscleGroupAccordion(muscleGroup: MuscleGroup) {
         setIsAddingExercise(false)
         setNewExerciseName("")
         setNewExerciseVnName("")
+        setNewExerciseTrackingType("reps_weight")
       },
     },
   })
@@ -67,6 +70,7 @@ export function useMuscleGroupAccordion(muscleGroup: MuscleGroup) {
         name: newExerciseName.trim(),
         vn_name: newExerciseVnName.trim(),
         muscle_group_id: muscleGroup.id,
+        tracking_type: newExerciseTrackingType as TrackingType,
       },
     })
   }
@@ -78,12 +82,14 @@ export function useMuscleGroupAccordion(muscleGroup: MuscleGroup) {
     isAddingExercise,
     newExerciseName,
     newExerciseVnName,
+    newExerciseTrackingType,
     setIsEditing,
     setIsAddingExercise,
     onEditNameChange: setEditName,
     onEditVnNameChange: setEditVnName,
     onNewExerciseNameChange: setNewExerciseName,
     onNewExerciseVnNameChange: setNewExerciseVnName,
+    onNewExerciseTrackingTypeChange: (v: string) => setNewExerciseTrackingType(v),
     handleSave,
     handleCancel,
     handleCreateExercise,

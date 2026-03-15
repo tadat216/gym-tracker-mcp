@@ -5,7 +5,7 @@ import {
   useDeleteExerciseApiExercisesExerciseIdDelete,
   getListExercisesApiExercisesGetQueryKey,
 } from "@/api/exercises/exercises"
-import type { Exercise } from "../../types"
+import type { Exercise } from "../../../types"
 
 export function useExerciseRow(exercise: Exercise) {
   const queryClient = useQueryClient()
@@ -14,6 +14,7 @@ export function useExerciseRow(exercise: Exercise) {
   const [name, setName] = useState(exercise.name)
   const [vnName, setVnName] = useState(exercise.vn_name)
   const [muscleGroupId, setMuscleGroupId] = useState(exercise.muscle_group_id)
+  const [trackingType, setTrackingType] = useState<string>(exercise.tracking_type)
 
   const invalidate = () =>
     queryClient.invalidateQueries({ queryKey: getListExercisesApiExercisesGetQueryKey() })
@@ -35,7 +36,7 @@ export function useExerciseRow(exercise: Exercise) {
     if (!name.trim()) return
     updateMutation.mutate({
       exerciseId: exercise.id,
-      data: { name: name.trim(), vn_name: vnName.trim(), muscle_group_id: muscleGroupId },
+      data: { name: name.trim(), vn_name: vnName.trim(), muscle_group_id: muscleGroupId, tracking_type: trackingType as Exercise["tracking_type"] },
     })
   }
 
@@ -43,6 +44,7 @@ export function useExerciseRow(exercise: Exercise) {
     setName(exercise.name)
     setVnName(exercise.vn_name)
     setMuscleGroupId(exercise.muscle_group_id)
+    setTrackingType(exercise.tracking_type)
     setIsEditing(false)
   }
 
@@ -52,11 +54,13 @@ export function useExerciseRow(exercise: Exercise) {
     name,
     vnName,
     muscleGroupId,
+    trackingType,
     setIsEditing,
     setShowDeleteConfirm,
     onNameChange: setName,
     onVnNameChange: setVnName,
     onMuscleGroupChange: setMuscleGroupId,
+    onTrackingTypeChange: (v: string) => setTrackingType(v),
     handleSave,
     handleCancel,
     handleDelete: () => deleteMutation.mutate({ exerciseId: exercise.id }),

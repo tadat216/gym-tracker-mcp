@@ -13,10 +13,12 @@ export interface ExerciseRowEditViewProps {
   vnName: string
   muscleGroupName: string
   allMuscleGroups: MuscleGroup[]
+  trackingType: string
   isSaving: boolean
   onNameChange: (v: string) => void
   onVnNameChange: (v: string) => void
   onMuscleGroupChange: (name: string | null) => void
+  onTrackingTypeChange: (value: string) => void
   onSave: () => void
   onCancel: () => void
 }

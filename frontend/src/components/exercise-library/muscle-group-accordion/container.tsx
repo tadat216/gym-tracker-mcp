@@ -39,11 +39,13 @@ export function MuscleGroupAccordion({
         isAddingExercise={hook.isAddingExercise}
         newExerciseName={hook.newExerciseName}
         newExerciseVnName={hook.newExerciseVnName}
+        newExerciseTrackingType={hook.newExerciseTrackingType}
         isCreatingExercise={hook.isCreatingExercise}
         onAddExercise={() => hook.setIsAddingExercise(true)}
         onCancelAddExercise={() => hook.setIsAddingExercise(false)}
         onNewExerciseNameChange={hook.onNewExerciseNameChange}
         onNewExerciseVnNameChange={hook.onNewExerciseVnNameChange}
+        onNewExerciseTrackingTypeChange={hook.onNewExerciseTrackingTypeChange}
         onCreateExercise={hook.handleCreateExercise}
       />
       <DeleteDialog

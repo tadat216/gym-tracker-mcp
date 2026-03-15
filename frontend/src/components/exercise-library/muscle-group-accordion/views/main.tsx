@@ -6,6 +6,14 @@ import {
 } from "@/components/ui/accordion"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { ExerciseRow } from "../exercise-row"
 import type { MuscleGroupAccordionViewProps } from "../types"
 
@@ -26,11 +34,13 @@ export function MuscleGroupAccordionView({
   isAddingExercise,
   newExerciseName,
   newExerciseVnName,
+  newExerciseTrackingType,
   isCreatingExercise,
   onAddExercise,
   onCancelAddExercise,
   onNewExerciseNameChange,
   onNewExerciseVnNameChange,
+  onNewExerciseTrackingTypeChange,
   onCreateExercise,
 }: MuscleGroupAccordionViewProps) {
   return (
@@ -122,6 +132,23 @@ export function MuscleGroupAccordionView({
                 onChange={(e) => onNewExerciseVnNameChange(e.target.value)}
                 disabled={isCreatingExercise}
               />
+              <Select
+                value={newExerciseTrackingType}
+                onValueChange={onNewExerciseTrackingTypeChange}
+                disabled={isCreatingExercise}
+                aria-label="Tracking type"
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select tracking type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectItem value="reps_weight">Weighted</SelectItem>
+                    <SelectItem value="bodyweight">Bodyweight</SelectItem>
+                    <SelectItem value="duration">Duration</SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
               <div className="action-group">
                 <Button size="icon" variant="ghost" onClick={onCreateExercise} disabled={isCreatingExercise}>
                   <Check />
