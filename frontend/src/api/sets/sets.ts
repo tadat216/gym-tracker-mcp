@@ -17,6 +17,7 @@ import type {
 import type {
   HTTPValidationError,
   SetCreate,
+  SetResponse,
   SetUpdate
 } from '../model';
 
@@ -34,7 +35,7 @@ export const logSetApiSetsPost = (
 ) => {
       
       
-      return customAxiosInstance<unknown>(
+      return customAxiosInstance<SetResponse>(
       {url: `/api/sets`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: setCreate, signal
@@ -98,7 +99,7 @@ export const updateSetApiSetsSetIdPatch = (
 ) => {
       
       
-      return customAxiosInstance<unknown>(
+      return customAxiosInstance<SetResponse>(
       {url: `/api/sets/${setId}`, method: 'PATCH',
       headers: {'Content-Type': 'application/json', },
       data: setUpdate, signal

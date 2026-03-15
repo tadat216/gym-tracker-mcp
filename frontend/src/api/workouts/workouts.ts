@@ -25,6 +25,7 @@ import type {
 
 import type {
   GetCalendarApiWorkoutsCalendarGetParams,
+  GetMuscleGroupVolumeApiWorkoutsMuscleGroupMuscleGroupIdGetParams,
   HTTPValidationError,
   ListWorkoutsApiWorkoutsGetParams,
   ListWorkoutsInRangeApiWorkoutsRangeGetParams,
@@ -363,6 +364,104 @@ export function useGetCalendarApiWorkoutsCalendarGet<TData = Awaited<ReturnType<
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getGetCalendarApiWorkoutsCalendarGetQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+/**
+ * @summary Get Muscle Group Volume
+ */
+export const getMuscleGroupVolumeApiWorkoutsMuscleGroupMuscleGroupIdGet = (
+    muscleGroupId: number,
+    params: GetMuscleGroupVolumeApiWorkoutsMuscleGroupMuscleGroupIdGetParams,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customAxiosInstance<unknown>(
+      {url: `/api/workouts/muscle-group/${muscleGroupId}`, method: 'GET',
+        params, signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetMuscleGroupVolumeApiWorkoutsMuscleGroupMuscleGroupIdGetQueryKey = (muscleGroupId: number,
+    params?: GetMuscleGroupVolumeApiWorkoutsMuscleGroupMuscleGroupIdGetParams,) => {
+    return [
+    `/api/workouts/muscle-group/${muscleGroupId}`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+    
+export const getGetMuscleGroupVolumeApiWorkoutsMuscleGroupMuscleGroupIdGetQueryOptions = <TData = Awaited<ReturnType<typeof getMuscleGroupVolumeApiWorkoutsMuscleGroupMuscleGroupIdGet>>, TError = HTTPValidationError>(muscleGroupId: number,
+    params: GetMuscleGroupVolumeApiWorkoutsMuscleGroupMuscleGroupIdGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMuscleGroupVolumeApiWorkoutsMuscleGroupMuscleGroupIdGet>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetMuscleGroupVolumeApiWorkoutsMuscleGroupMuscleGroupIdGetQueryKey(muscleGroupId,params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMuscleGroupVolumeApiWorkoutsMuscleGroupMuscleGroupIdGet>>> = ({ signal }) => getMuscleGroupVolumeApiWorkoutsMuscleGroupMuscleGroupIdGet(muscleGroupId,params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(muscleGroupId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getMuscleGroupVolumeApiWorkoutsMuscleGroupMuscleGroupIdGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetMuscleGroupVolumeApiWorkoutsMuscleGroupMuscleGroupIdGetQueryResult = NonNullable<Awaited<ReturnType<typeof getMuscleGroupVolumeApiWorkoutsMuscleGroupMuscleGroupIdGet>>>
+export type GetMuscleGroupVolumeApiWorkoutsMuscleGroupMuscleGroupIdGetQueryError = HTTPValidationError
+
+
+export function useGetMuscleGroupVolumeApiWorkoutsMuscleGroupMuscleGroupIdGet<TData = Awaited<ReturnType<typeof getMuscleGroupVolumeApiWorkoutsMuscleGroupMuscleGroupIdGet>>, TError = HTTPValidationError>(
+ muscleGroupId: number,
+    params: GetMuscleGroupVolumeApiWorkoutsMuscleGroupMuscleGroupIdGetParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMuscleGroupVolumeApiWorkoutsMuscleGroupMuscleGroupIdGet>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getMuscleGroupVolumeApiWorkoutsMuscleGroupMuscleGroupIdGet>>,
+          TError,
+          Awaited<ReturnType<typeof getMuscleGroupVolumeApiWorkoutsMuscleGroupMuscleGroupIdGet>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetMuscleGroupVolumeApiWorkoutsMuscleGroupMuscleGroupIdGet<TData = Awaited<ReturnType<typeof getMuscleGroupVolumeApiWorkoutsMuscleGroupMuscleGroupIdGet>>, TError = HTTPValidationError>(
+ muscleGroupId: number,
+    params: GetMuscleGroupVolumeApiWorkoutsMuscleGroupMuscleGroupIdGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMuscleGroupVolumeApiWorkoutsMuscleGroupMuscleGroupIdGet>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getMuscleGroupVolumeApiWorkoutsMuscleGroupMuscleGroupIdGet>>,
+          TError,
+          Awaited<ReturnType<typeof getMuscleGroupVolumeApiWorkoutsMuscleGroupMuscleGroupIdGet>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetMuscleGroupVolumeApiWorkoutsMuscleGroupMuscleGroupIdGet<TData = Awaited<ReturnType<typeof getMuscleGroupVolumeApiWorkoutsMuscleGroupMuscleGroupIdGet>>, TError = HTTPValidationError>(
+ muscleGroupId: number,
+    params: GetMuscleGroupVolumeApiWorkoutsMuscleGroupMuscleGroupIdGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMuscleGroupVolumeApiWorkoutsMuscleGroupMuscleGroupIdGet>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get Muscle Group Volume
+ */
+
+export function useGetMuscleGroupVolumeApiWorkoutsMuscleGroupMuscleGroupIdGet<TData = Awaited<ReturnType<typeof getMuscleGroupVolumeApiWorkoutsMuscleGroupMuscleGroupIdGet>>, TError = HTTPValidationError>(
+ muscleGroupId: number,
+    params: GetMuscleGroupVolumeApiWorkoutsMuscleGroupMuscleGroupIdGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMuscleGroupVolumeApiWorkoutsMuscleGroupMuscleGroupIdGet>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetMuscleGroupVolumeApiWorkoutsMuscleGroupMuscleGroupIdGetQueryOptions(muscleGroupId,params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

@@ -8,6 +8,7 @@
 export * from './exerciseCreate';
 export * from './exerciseUpdate';
 export * from './getCalendarApiWorkoutsCalendarGetParams';
+export * from './getMuscleGroupVolumeApiWorkoutsMuscleGroupMuscleGroupIdGetParams';
 export * from './hTTPValidationError';
 export * from './listExercisesApiExercisesGetParams';
 export * from './listWorkoutsApiWorkoutsGetParams';
@@ -17,7 +18,9 @@ export * from './loginResponse';
 export * from './muscleGroupCreate';
 export * from './muscleGroupUpdate';
 export * from './setCreate';
+export * from './setResponse';
 export * from './setUpdate';
+export * from './trackingType';
 export * from './validationError';
 export * from './validationErrorCtx';
 export * from './workoutCreate';

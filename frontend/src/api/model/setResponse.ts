@@ -5,7 +5,9 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export interface SetUpdate {
+export interface SetResponse {
+  id: number;
+  workout_exercise_id: number;
   rep_count?: number | null;
   weight?: number | null;
   duration_sec?: number | null;
