@@ -128,10 +128,12 @@ export function WorkoutLogDetailView({
               selectedExercise={selectedExercise}
               repCount={repCount}
               weight={weight}
+              durationSec={durationSec}
               isSubmitting={isSubmitting}
               onSelectExercise={onSelectExercise}
               onRepCountChange={onRepCountChange}
               onWeightChange={onWeightChange}
+              onDurationSecChange={onDurationSecChange}
               onSubmit={onSubmitSet}
               onCancel={onCancelAdd}
             />

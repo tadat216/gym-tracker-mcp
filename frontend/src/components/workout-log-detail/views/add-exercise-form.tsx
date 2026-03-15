@@ -16,10 +16,12 @@ interface AddExerciseFormProps {
   selectedExercise: Exercise | null
   repCount: string
   weight: string
+  durationSec: string
   isSubmitting: boolean
   onSelectExercise: (exercise: Exercise) => void
   onRepCountChange: (v: string) => void
   onWeightChange: (v: string) => void
+  onDurationSecChange: (v: string) => void
   onSubmit: () => void
   onCancel: () => void
 }
@@ -31,10 +33,12 @@ export function AddExerciseForm({
   selectedExercise,
   repCount,
   weight,
+  durationSec,
   isSubmitting,
   onSelectExercise,
   onRepCountChange,
   onWeightChange,
+  onDurationSecChange,
   onSubmit,
   onCancel,
 }: AddExerciseFormProps) {
@@ -84,28 +88,60 @@ export function AddExerciseForm({
         Adding set for: <span className="text-foreground">{selectedExercise.name}</span>
       </p>
       <div className="flex gap-2 items-end">
-        <div className="flex flex-col gap-1 flex-1">
-          <Label htmlFor="weight-input" className="text-xs text-muted-foreground">Weight (kg)</Label>
-          <Input
-            id="weight-input"
-            type="number"
-            value={weight}
-            onChange={(e) => onWeightChange(e.target.value)}
-            placeholder="0"
-            className="h-8"
-          />
-        </div>
-        <div className="flex flex-col gap-1 flex-1">
-          <Label htmlFor="reps-input" className="text-xs text-muted-foreground">Reps</Label>
-          <Input
-            id="reps-input"
-            type="number"
-            value={repCount}
-            onChange={(e) => onRepCountChange(e.target.value)}
-            placeholder="0"
-            className="h-8"
-          />
-        </div>
+        {selectedExercise.tracking_type === 'duration' ? (
+          <div className="flex flex-col gap-1 flex-1">
+            <Label htmlFor="duration-input" className="text-xs text-muted-foreground">Duration (sec)</Label>
+            <Input
+              id="duration-input"
+              type="number"
+              value={durationSec}
+              onChange={(e) => onDurationSecChange(e.target.value)}
+              placeholder="0"
+              className="h-8"
+            />
+          </div>
+        ) : (
+          <>
+            {selectedExercise.tracking_type === 'bodyweight' ? (
+              <div className="flex flex-col gap-1 flex-1">
+                <Label htmlFor="reps-input" className="text-xs text-muted-foreground">Reps</Label>
+                <Input
+                  id="reps-input"
+                  type="number"
+                  value={repCount}
+                  onChange={(e) => onRepCountChange(e.target.value)}
+                  placeholder="0"
+                  className="h-8"
+                />
+              </div>
+            ) : (
+              <>
+                <div className="flex flex-col gap-1 flex-1">
+                  <Label htmlFor="weight-input" className="text-xs text-muted-foreground">Weight (kg)</Label>
+                  <Input
+                    id="weight-input"
+                    type="number"
+                    value={weight}
+                    onChange={(e) => onWeightChange(e.target.value)}
+                    placeholder="0"
+                    className="h-8"
+                  />
+                </div>
+                <div className="flex flex-col gap-1 flex-1">
+                  <Label htmlFor="reps-input" className="text-xs text-muted-foreground">Reps</Label>
+                  <Input
+                    id="reps-input"
+                    type="number"
+                    value={repCount}
+                    onChange={(e) => onRepCountChange(e.target.value)}
+                    placeholder="0"
+                    className="h-8"
+                  />
+                </div>
+              </>
+            )}
+          </>
+        )}
         <Button type="button" size="sm" onClick={onSubmit} disabled={isSubmitting} className="h-8">
           Add
         </Button>
