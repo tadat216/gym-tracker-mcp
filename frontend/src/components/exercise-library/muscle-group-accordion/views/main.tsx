@@ -134,7 +134,7 @@ export function MuscleGroupAccordionView({
               />
               <Select
                 value={newExerciseTrackingType}
-                onValueChange={onNewExerciseTrackingTypeChange}
+                onValueChange={(value) => value !== null && onNewExerciseTrackingTypeChange(value)}
                 disabled={isCreatingExercise}
                 aria-label="Tracking type"
               >

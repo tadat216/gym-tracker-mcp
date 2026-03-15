@@ -61,7 +61,7 @@ export function ExerciseRowEditView({
       </Select>
       <Select
         value={trackingType}
-        onValueChange={onTrackingTypeChange}
+        onValueChange={(value) => value !== null && onTrackingTypeChange(value)}
         disabled={isSaving}
         aria-label="Tracking type"
       >
