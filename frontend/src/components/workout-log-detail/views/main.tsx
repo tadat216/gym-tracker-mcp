@@ -88,6 +88,7 @@ export function WorkoutLogDetailView({
                 key={ex.workout_exercise_id}
                 exercise={ex}
                 isAddingSet={isAddingToExisting && selectedExercise?.id === ex.exercise_id}
+                addingTrackingType={isAddingToExisting && selectedExercise?.id === ex.exercise_id ? selectedExercise?.tracking_type : undefined}
                 repCount={repCount}
                 weight={weight}
                 durationSec={durationSec}

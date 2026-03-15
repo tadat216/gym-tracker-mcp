@@ -1,4 +1,5 @@
 import { TrackingType } from '../../api/model/trackingType'
+export { TrackingType }
 
 export interface SetData {
   id: number

@@ -1,11 +1,12 @@
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import type { ExerciseData } from '../types'
+import type { ExerciseData, TrackingType } from '../types'
 import { SetRow } from './set-row'
 
 interface ExerciseItemProps {
   exercise: ExerciseData
   isAddingSet: boolean
+  addingTrackingType?: TrackingType
   repCount: string
   weight: string
   durationSec: string
@@ -30,6 +31,7 @@ function formatDuration(totalSec: number): string {
 export function ExerciseItem({
   exercise,
   isAddingSet,
+  addingTrackingType,
   repCount,
   weight,
   durationSec,
@@ -43,7 +45,8 @@ export function ExerciseItem({
   onSubmitSet,
   onCancelAdd,
 }: ExerciseItemProps) {
-  const trackingType = exercise.tracking_type
+  // Use fresh tracking type from exercises list when in add-set mode (workout detail cache may be stale)
+  const trackingType = (isAddingSet && addingTrackingType) ? addingTrackingType : exercise.tracking_type
 
   // Progress summary calculations
   const progressSummary = (() => {
