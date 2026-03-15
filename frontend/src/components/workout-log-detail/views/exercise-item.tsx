@@ -11,7 +11,7 @@ interface ExerciseItemProps {
   isSubmitting: boolean
   onAddSet: (exerciseId: number, workoutExerciseId: number) => void
   onDeleteSet: (setId: number, workoutExerciseId: number, isLastSet: boolean) => void
-  onEditSet: (setId: number, repCount: number, weight: number) => Promise<void>
+  onEditSet: (setId: number, payload: { rep_count?: number; weight?: number; duration_sec?: number }) => Promise<void>
   onRepCountChange: (v: string) => void
   onWeightChange: (v: string) => void
   onSubmitSet: () => void
@@ -53,10 +53,11 @@ export function ExerciseItem({
             key={set.id}
             set={set}
             index={index}
+            tracking_type={exercise.tracking_type}
             onDelete={() =>
               onDeleteSet(set.id, exercise.workout_exercise_id, exercise.sets.length === 1)
             }
-            onEdit={onEditSet}
+            onEdit={(setId, payload) => onEditSet(setId, payload)}
           />
         ))}
         <div className="mt-3 flex flex-col border-t pt-2">

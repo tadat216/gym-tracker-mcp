@@ -31,7 +31,7 @@ interface WorkoutLogDetailViewProps {
   onCancelAdd: () => void
   onAddSet: (exerciseId: number, workoutExerciseId: number) => void
   onDeleteSet: (setId: number, workoutExerciseId: number, isLastSet: boolean) => void
-  onEditSet: (setId: number, repCount: number, weight: number) => Promise<void>
+  onEditSet: (setId: number, payload: { rep_count?: number; weight?: number; duration_sec?: number }) => Promise<void>
   onBack: () => void
 }
 

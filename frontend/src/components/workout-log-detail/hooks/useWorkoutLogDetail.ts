@@ -135,8 +135,8 @@ export function useWorkoutLogDetail(date: string) {
     }
   }
 
-  async function handleUpdateSet(setId: number, repCount: number, weight: number, duration_sec?: number) {
-    await updateSetMutation.mutateAsync({ setId, data: { rep_count: repCount, weight, duration_sec } })
+  async function handleUpdateSet(setId: number, payload: { rep_count?: number; weight?: number; duration_sec?: number }) {
+    await updateSetMutation.mutateAsync({ setId, data: payload })
     if (resolvedWorkoutId !== null) {
       await queryClient.invalidateQueries({
         queryKey: getGetWorkoutDetailApiWorkoutsWorkoutIdGetQueryKey(resolvedWorkoutId),
