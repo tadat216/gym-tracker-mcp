@@ -139,7 +139,9 @@ export function MuscleGroupAccordionView({
                 aria-label="Tracking type"
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select tracking type" />
+                  <SelectValue placeholder="Select tracking type">
+                    {{ reps_weight: 'Weighted', bodyweight: 'Bodyweight', duration: 'Duration' }[newExerciseTrackingType] ?? 'Select tracking type'}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
