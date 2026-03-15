@@ -68,8 +68,9 @@ def register(mcp: FastMCP) -> None:
                     "exercise_id": we.exercise_id,
                     "name": exercise.name if exercise else None,
                     "vn_name": exercise.vn_name if exercise else None,
+                    "tracking_type": exercise.tracking_type if exercise else None,
                     "sets": [
-                        {"id": s.id, "rep_count": s.rep_count, "weight": s.weight}
+                        {"id": s.id, "rep_count": s.rep_count, "weight": s.weight, "duration_sec": s.duration_sec}
                         for s in sets
                     ],
                 })
