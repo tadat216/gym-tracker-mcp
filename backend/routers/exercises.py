@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlmodel import Session
 
+from database import TrackingType
 from deps import get_session
 from services import ExerciseService
 
@@ -12,16 +13,18 @@ class ExerciseCreate(BaseModel):
     name: str
     vn_name: str
     muscle_group_id: int
+    tracking_type: TrackingType = TrackingType.reps_weight
 
 
 class ExerciseUpdate(BaseModel):
     name: str | None = None
     vn_name: str | None = None
     muscle_group_id: int | None = None
+    tracking_type: TrackingType | None = None
 
 
 def _fmt(e):
-    return {"id": e.id, "name": e.name, "vn_name": e.vn_name, "muscle_group_id": e.muscle_group_id}
+    return {"id": e.id, "name": e.name, "vn_name": e.vn_name, "muscle_group_id": e.muscle_group_id, "tracking_type": e.tracking_type}
 
 
 @router.get("")
@@ -32,7 +35,7 @@ def list_exercises(muscle_group_id: int | None = None, session: Session = Depend
 
 @router.post("", status_code=201)
 def create_exercise(body: ExerciseCreate, session: Session = Depends(get_session)):
-    exercise = ExerciseService(session).create(body.name, body.vn_name, body.muscle_group_id)
+    exercise = ExerciseService(session).create(body.name, body.vn_name, body.muscle_group_id, tracking_type=body.tracking_type)
     return _fmt(exercise)
 
 
@@ -51,7 +54,7 @@ def update_exercise(
     session: Session = Depends(get_session),
 ):
     exercise = ExerciseService(session).update(
-        exercise_id, body.name, body.vn_name, body.muscle_group_id
+        exercise_id, body.name, body.vn_name, body.muscle_group_id, tracking_type=body.tracking_type
     )
     if not exercise:
         raise HTTPException(status_code=404, detail="Exercise not found")
