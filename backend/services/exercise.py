@@ -1,14 +1,14 @@
 from sqlmodel import Session, select
 
-from database import Exercise
+from database import Exercise, TrackingType
 
 
 class ExerciseService:
     def __init__(self, session: Session) -> None:
         self.session = session
 
-    def create(self, name: str, vn_name: str, muscle_group_id: int) -> Exercise:
-        exercise = Exercise(name=name, vn_name=vn_name, muscle_group_id=muscle_group_id)
+    def create(self, name: str, vn_name: str, muscle_group_id: int, tracking_type: TrackingType = TrackingType.reps_weight) -> Exercise:
+        exercise = Exercise(name=name, vn_name=vn_name, muscle_group_id=muscle_group_id, tracking_type=tracking_type)
         self.session.add(exercise)
         self.session.commit()
         self.session.refresh(exercise)
@@ -29,6 +29,7 @@ class ExerciseService:
         name: str | None = None,
         vn_name: str | None = None,
         muscle_group_id: int | None = None,
+        tracking_type: TrackingType | None = None,
     ) -> Exercise | None:
         exercise = self.session.get(Exercise, exercise_id)
         if exercise is None:
@@ -39,6 +40,8 @@ class ExerciseService:
             exercise.vn_name = vn_name
         if muscle_group_id is not None:
             exercise.muscle_group_id = muscle_group_id
+        if tracking_type is not None:
+            exercise.tracking_type = tracking_type
         self.session.add(exercise)
         self.session.commit()
         self.session.refresh(exercise)

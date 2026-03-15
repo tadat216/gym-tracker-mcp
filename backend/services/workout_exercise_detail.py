@@ -7,11 +7,12 @@ class WorkoutExerciseDetailService:
     def __init__(self, session: Session) -> None:
         self.session = session
 
-    def create(self, workout_exercise_id: int, rep_count: int, weight: float) -> WorkoutExerciseDetail:
+    def create(self, workout_exercise_id: int, rep_count: int | None = None, weight: float | None = None, duration_sec: int | None = None) -> WorkoutExerciseDetail:
         detail = WorkoutExerciseDetail(
             workout_exercise_id=workout_exercise_id,
             rep_count=rep_count,
             weight=weight,
+            duration_sec=duration_sec,
         )
         self.session.add(detail)
         self.session.commit()
@@ -32,6 +33,7 @@ class WorkoutExerciseDetailService:
         detail_id: int,
         rep_count: int | None = None,
         weight: float | None = None,
+        duration_sec: int | None = None,
     ) -> WorkoutExerciseDetail | None:
         detail = self.session.get(WorkoutExerciseDetail, detail_id)
         if detail is None:
@@ -40,6 +42,8 @@ class WorkoutExerciseDetailService:
             detail.rep_count = rep_count
         if weight is not None:
             detail.weight = weight
+        if duration_sec is not None:
+            detail.duration_sec = duration_sec
         self.session.add(detail)
         self.session.commit()
         self.session.refresh(detail)
